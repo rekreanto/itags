@@ -1,0 +1,26 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+h1, div {
+  border: solid 1px hsla( 0, 0%, 0%, 0.05 );
+  padding: 1em;
+  background-color: hsla( 0, 0%, 0%, 0.05 );
+  color: black;
+}
+
+.dark {
+  background-color: hsla( 0, 0%, 0%, 1 );
+}
+.dark h1, .dark div {
+  border: solid 1px hsla( 0, 0%, 100%, 0.05 );
+  padding: 1em;
+  background-color: hsla( 0, 0%, 100%, 0.10 );
+  color: white;
+}
+
+
+.nice-class {
+  border: dashed 5px black;
+}

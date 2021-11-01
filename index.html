@@ -1,0 +1,40 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Itags dev</title>
+
+  <link href= "itags--style.css" rel="stylesheet">
+
+  <script src="itags.js"></script>
+  <!-- <script src="page.js"></script> -->
+  <link href= "apps/app01--BasicCounter.css" rel="stylesheet">
+  <script src="apps/app01--BasicCounter.js"></script>
+  
+</head>
+<body> 
+  <script>
+    let page = BasicCounter3;
+
+    let ctx;
+    let exit;
+
+    window.addEventListener( 'DOMContentLoaded', ()=>{
+
+      ctx = 
+        { node: document.body
+        , layer: mk_layer({})
+        }
+      ;
+      const t0 = performance.now();
+      itag2fn( page )( ctx ); // construct initial page
+      const t1 = performance.now();
+      console.log((t1-t0).toFixed(2),"ms")
+
+    });
+
+</script>
+</body>
+</html>
