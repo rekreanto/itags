@@ -13,23 +13,23 @@
   <link href= "apps/app01--BasicCounter.css" rel="stylesheet">
   <script src="apps/app01--BasicCounter.js"></script>
   
+  <link href= "apps/app02--TempConv.css" rel="stylesheet">
+  <script src="apps/app02--TempConv.js"></script>
 </head>
 <body> 
   <script>
-    let page = BasicCounter3;
-
-    let ctx;
-    let exit;
-
+    let lay;
+  
+    //page = { app: BasicCounter1 , values:  [ 42 ] };
+    // page = { app: BasicCounter2 , values:  [ 1042 ] };
+    // page = { app: BasicCounter2a, values: [ 2042 ] };
+    page = { app: TempConv      , values: [ 'f', '451' ] };
+    // page = { app: BasicCounter , values:  [ 0 ] };
+    let Observe;
+    Observe = () => { console.log( GetValues( lay ) ) }
     window.addEventListener( 'DOMContentLoaded', ()=>{
-
-      ctx = 
-        { node: document.body
-        , layer: mk_layer({})
-        }
-      ;
       const t0 = performance.now();
-      itag2fn( page )( ctx ); // construct initial page
+      lay = EmbodyLayers( page.app )({ node: document.body, layer: {}, values: page.values });
       const t1 = performance.now();
       console.log((t1-t0).toFixed(2),"ms")
 

@@ -1,31 +1,41 @@
 .BasicCounter {
-  display: inline-block;
-  width: 300px;
+  background-color: black;
+  color: hsla( 0, 0%, 100%, 66%);
+  text-align: center;
+  font-family: monospace;
 }
 
 .BasicCounter__title {
-  background-color: black;
-  color: white;
+  background-color: hsla(0,0%,100%, 6.6%);
+  color: hsla( 0, 0%, 100%, 66%);
 }
 
-
-h1, .display, .buttons {
-  text-align: center;
-}
-
-.display {
+.BasicCounter__display {
   font-weight: bold;
   font-size: 8rem;
+  padding: 2rem;
   font-family: 'Courier New', Courier, monospace;
+/*   color: white; */
 }
 
-button {
+.BasicCounter__display.negative  { color: red;   }
+.BasicCounter__display.zero      { color: orange; }
+.BasicCounter__display.positive  { color: green; }
+
+.BasicCounter__buttons {
+  background-color: hsla(0,0%,100%, 6.6%);
+}
+.BasicCounter__buttons > * {
+  background-color: hsla( 0, 0%,100%, 10% );
+}
+
+.BasicCounter__buttons > * {
   font-size: 1.2rem;
   padding: 0.6rem;
   margin: 0.5rem;
   min-width: 3rem;
+  background-color: hsla( 0, 0%,100%, 10% );
+  color: hsla( 0, 0%, 100%, 77%);
 }
 
-.negative  { color: red;   }
-.zero { color: orange; }
-.positive  { color: green; }
+

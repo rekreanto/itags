@@ -1,5 +1,21 @@
-// PRELUDE
+/** Table of Contents
+ * 1. Namespaces
+ * 2. Prelude
+ * 3. Tags
+ * 4. Embodimentation
+ * 5. Syntax
+ */
 
+
+// 1. NAMESPACES
+
+// namespaces for itags off different valence (number of applications)
+const itag0 = {};
+const itag1 = {};
+const itag2 = {};
+
+
+// 2. PRELUDE
 
 // prelude -- predicates
 
@@ -12,7 +28,6 @@ const isRegExp   = x => x && typeof x === 'object' && x.constructor === RegExp;
 const isString   = x => typeof x === 'string' || x instanceof String;
 const isSymbol   = x => typeof x === 'symbol';
 const isNode     = x => typeof x  === 'object' && x.nodeType !== undefined;
-const areMany    = ( ...xs ) => 1 < xs.length;
 const FailNonExhaustive = ( x ) => { throw `Case: Non-exhaustive clauses for input ${ x }` } 
 
 const isEq = ( y ) => ( x ) => x === y;
@@ -21,6 +36,7 @@ const isZip = ( preds, xs ) => {
   for( let i = 0; i < len; i++ ) if( !preds[ i ]( xs[ i ]) ) return false;
   return true;
 };
+
 const as_pred = ( p ) => ( x, ...xs ) =>
   isFunction( p )? p( x, ...xs )
   : isNumber( p )? p === x
@@ -29,7 +45,6 @@ const as_pred = ( p ) => ( x, ...xs ) =>
   : isArray ( p )? isZip( p, [ x, ...xs ] )
   : FailNonExhaustive( p )
 ; // can't use Case to define as_pred, due to js eagerness
-
 
 // prelude -- predicates -- adapters
 
@@ -45,7 +60,8 @@ const Case = ( ...clauses ) => ( ...xs ) => {
 
 // prelude -- patterns
 
-const Return = x => () => x;  
+const Return = x => () => x;
+const Result = ( ...xs ) => [ ...xs ];   
 
 const pred2pat = ( p ) => ( ...xs ) => ( succ, fail ) => ( p( ...xs )? succ: fail )( ...xs );
 
@@ -80,9 +96,30 @@ const _zip = preds => ( ...xs ) => ( succ, fail ) => {
 };
 
 
-const _re = re => str => ( succ, fail ) => {
+const _re0 = re => str => ( succ, fail ) => {
   const md = re.exec( str );
   return md? succ( ...md.slice( 1 ) ): fail( str );
+};
+
+const _re = re => str => ( succ, fail ) => {
+  // console.log( re, str );
+  const match_data   = re.exec( str );            // try to match
+  if( match_data === null ) return fail( str );   // fail with original string
+  const captures     = match_data.slice( 1 );     // continue towards succeeding
+  const match_start  = match_data.index;          
+  const match_length = match_data[ 0 ].length; 
+  const match_end    = match_start + match_length;
+  const rest         = str.substr( match_end );
+  // succeed with substrings captured by groups, followed by the rest of the input string
+  return succ( ...captures, rest );
+};
+
+const _re_shortform = re => str => ( succ, fail ) => {
+  const match_data   = re.exec( str );            // try to match
+  if( match_data === null ) return fail( str );   // match failed
+  // continue with the successful match data
+  // return substrings captured by groups, followed by the rest of the input string
+  return succ( ...match_data.slice( 1 ), str.substr( match_data.index + match_data[ 0 ].length ) );
 };
 
 const as_pattern = Case
@@ -90,7 +127,7 @@ const as_pattern = Case
     , isString   , _eq
     , isNumber   , _eq
     , isRegExp   , _re
-    , isArray    , _zip 
+//  , isArray    , _zip 
     )
   ;
 
@@ -107,99 +144,64 @@ const Match = ( ...pfs ) => ( ...xs ) => {
 };
 
 
-// SYNTAX
+// 3. TAGS
 
-const TextNode = ( ...strs ) => ( ctx ) => {
-  const el = document.createTextNode( strs.join( '' ) );
-  ctx.node.appendChild( el );
-  ctx.layer.exit.push( el );  // store exit
-}; // entry 
-
-itag_head2fn = Match
-  ( _Function                           , ( fn )       => fn              // already in functional form
-  , /^the +([a-z\-]+)$/                 , ( n )        => The( n )        // a tag reference
-  , /^<([a-z0-9\-]+)>$/                 , ( tag )      => Mk( tag )       // an unnamed tag creation
-  , /^<([a-z0-9\-]+)> +([a-z0-9\-]+)$/  , ( tag, key ) => Mk( tag, key )  // a named tag creation
-  , /^on +([a-z\-]+)$/                  , ( n )        => On( n )         // a tag reference
-  )
-;
-
-const itag2fn = Case
-  ( isFunction , fn => fn
-  , isArray    , ([ head, ...args ]) => itag_head2fn( head )( ...args ) // let head decide syntax of tags
-  , isString   , str => TextNode( str )
-  , isNumber   , num => TextNode( num.toString() )
-               , x   => { throw `non-exhausitve clauses in itags for input ${ x }`}  
-  )
-; 
-
-
-// TAGS -- HORIZONTAL
-
+// tags -- helpers
 const project = ( ...ctxs ) =>  Object.assign( {}, ...ctxs.reverse() ); // inefficient
 
-const as_xlayer = Case
-    ( isFunction , fn  => fn
-    , isObject   , obj => key => obj[ key ]
-    )
-;
-
-const mk_layer = ( ground ) => {
-  const lay = 
-    { trans    : {}
-    , exit     : []
-    , env      : {}
-    , xlayers  : []
-    , lower    : ground
-    }
-  ;
-  ground.upper = lay;
-  return lay;
-};
-
-// [ Layer, <itag>* ]  
-const Layer = ( ...itags ) => ( ctx ) => {
+// [ itag1.layer, <itag>* ]  
+itag1.layer = ( ...itags ) => ( ctx ) => {
   for( let itag of itags ) itag2fn( itag )( ctx );      // process itag syntax
-  // Embody xlayers
-  const lay = mk_layer( ctx.layer );
-  const ctx_ = project( { layer: lay }, ctx );
-  for( xlay of ctx.layer.xlayers ){
-    const itg = as_xlayer( xlay )( ctx.layer.value );
-    itag2fn( itg )( ctx_ );   // embody in new layer
-  }
-
 }; // entry 
 
 
-// tags -- h_ build
-// [ BaseLayer( <name> ), <itag>* ]  
-const BaseLayer = ( name ) => ( ...itags ) => ( ctx ) => {
-  ctx.layer.base = name;
-  Layer( ...itags )( ctx );
+// [ itag2.block( <name> ), <itag>* ]  
+itag2.block = ( ...names ) => ( ...itags ) => ( ctx ) => {
+  for( let name of names ) itag1.class( name )( ctx );
+  ctx.layer.block = names;
+  itag1.layer( ...itags )( ctx );
 }; // entry
 
+itag1.html = str => ctx => {
+  // if not empty => non-monotonic
+  ctx.node.innerHTML = str;
+}
 
-// [ Mk( <tag>, <role>? ), <itag>* ] 
-const Mk = ( tag, key ) => ( ...itags ) => ( ctx ) => {
-  const el = document.createElement( tag );      // create elem
-  ctx.layer.exit.push( el );                     // store exit effect
-  if( key ) ctx.layer.env[ key ] = el;           // make elem referable
-  Layer( ...itags )( project( { node: el }, ctx ) );   // process child itags 
-  ctx.node.appendChild( el );                    // mount element
+itag1.textnode = ( ...strs ) => ( ctx ) => {
+  const el = document.createTextNode( strs.join( '' ) );
+  ctx.node.appendChild( el );
+  ctx.layer.exits.push( el );  // store exit
 }; // entry 
 
+// [ itag2.mk( <tag>, <role>? ), <itag>* ] 
+itag2.mk = ( tag, role ) => ( ...itags ) => ( ctx ) => {
+  const [ tagName, type ] = tag.split('/');
+  const el = document.createElement( tagName );          // create elem
+  ctx.layer.exits.push( el );                         // store exit effect
+  const ctx_ = project( { node: el }, ctx );         // project context
+  if( type ) el.setAttribute( 'type', type );                    // set type if given
+  if( role ) el.setAttribute( 'name', role );
+  if( role ){
+    ctx.layer.env[ role ] = el;                      // make elem referable
+    const blocks = lookup2( ctx.layer, 'block' );
+    for( let block of blocks ) itag1.class( `${ block }__${ role }` )( ctx_ ); // add BEM class, use for precise targeting in CSS
+  };
+  itag1.layer( ...itags )( ctx_ ); // process child itags 
+  ctx.node.appendChild( el );      // mount element
+}; // entry 
 
-const lookup = ( k, lay ) => lay.env.hasOwnProperty( k )? lay.env[ k ]: lookup( k, lay.lower );
+const lookup2 = ( lay, k ) => lay.hasOwnProperty( k )? lay[ k ]: lookup2( lay.lower, k );
+const lookup3 = ( lay, k1, k2 ) => lay[k1].hasOwnProperty( k2 )? lay[ k1 ][ k2 ]: lookup3( lay.lower, k1, k2 );
 
-// [ The( <key> ), <itag>* ] 
-const The = ( key ) => ( ...itags ) => ( ctx ) => {
+// [ itag2.the( <key> ), <itag>* ] 
+itag2.the = ( role ) => ( ...itags ) => ( ctx ) => {
   // process child itags in horizontally projected context
-  const nd = lookup( key, ctx.layer );
-  Layer( ...itags )( project( { node: nd }, ctx ) );
+  const nd = lookup3( ctx.layer, 'env', role );
+  itag1.layer( ...itags )( project( { node: nd }, ctx ) );
 }; // entry
 
-const Each__Arr = xs => x2itag => ctx => {
-  for( let x of xs ) itag2fn( x2itag( x ) )( ctx );
+const Each__Arr = xs => x2itag => ctx => { 
+  xs.forEach( ( ...xs ) => itag2fn( x2itag( ...xs ) )( ctx ) );
 };
 
 const Each__NumNum = ( a, b ) => x2itag => ctx => {
@@ -208,140 +210,259 @@ const Each__NumNum = ( a, b ) => x2itag => ctx => {
   let n = 0;
   while( n <= N ) itag2fn( x2itag( m + n++ ) )( ctx );
 };
-const Each = Case
+itag2.Each = Case
   ( isArray  , Each__Arr
   , isNumber , Each__NumNum 
   )
 ;
 
-
-// tags -- h_ modify
-// [ Attr, <str key>, <str val>  ]
-const Attr = ( attr, val ) => ( ctx ) => {
+// [ itag2.attr, <str key>, <str val>  ]
+itag2.attr = ( k ) => ( val ) => ( ctx ) => {
   // prepare
-  const isShadowed = ctx.node.hasAttribute( attr );
-  const shadowedValue = ctx.node[ attr ];
+  const isShadowed = ctx.node.hasAttribute( k );
+  const shadowedValue = ctx.node[ k ];
   // change
-  ctx.node[ attr ] = val;
-  ctx.layer.exit.push( 
+  ctx.node[ k ] = val;
+  ctx.layer.exits.push( 
     () => {
-      if( isShadowed ) ctx.node[ attr ] = shadowedValue; // remove and restore handler
-      else ctx.node.removeAttribute( attr );      // remove handler
-    } 
+      if( isShadowed ) ctx.node[ k ] = shadowedValue; // remove and restore handler
+      else ctx.node.removeAttribute( k );      // remove handler
+    }
   )
 };
 
-// [ Class, <str>+ ]
-const Class = ( ...cls ) => ( ctx ) => {
-  const added_classes = cls.filter( cl => !ctx.node.classList.contains( cl ) );
-  for( let cl of added_classes ) ctx.node.classList.add( cl );
-  ctx.layer.exit.push(
-    () => {
-      for( let cl of added_classes ) ctx.node.classList.remove( cl );
-    }
-  );
-}; // entry 
 
-// [ Style, <str key>, <val> ]
-const Style = ( k, v ) => ( ctx ) => {
-  const orig = ctx.node.style[ k ];
+// [ itag1.class, <str>+ ]
+itag1.class = ( cl ) => ( ctx ) => {
+
+  if( ctx.node.classList.contains( cl ) ) console.error( `Non-monotonic add of class '${ cl }''` );
+  ctx.node.classList.add( cl );
+  ctx.layer.exits.push(() => { ctx.node.classList.remove( cl ); });
+
+};
+
+// [ itag1.style, <str key>, <val> ]
+itag1.style = ( k, v ) => itag2. style( k )( v );
+
+// [ itag1.style, <str key>, <val> ]
+itag2.style = ( k ) => ( v ) => ( ctx ) => {
+  if( ctx.node.style.getPropertyValue( k ) !== '' ) console.error( `Non-monotonic add of itag1.style( '${ k }', '${ v }' )` );
   ctx.node.style[ k ] = v;
-  ctx.layer.exit.push(
-    () => {
-      ctx.node.style[ k ] = orig;
-    }
-  );
-}
+  ctx.layer.exits.push( () => { ctx.node.style.removeProperty( k ); } );
+};
+
+
+itag0.select = () => ctx => { ctx.node.select(); }
+itag1.log = msg => ctx => { console.log( msg, ctx ); };
+
+
+// TAGS -- TIME
+
+itag2.after = ( delay ) => ( trans ) => ( ctx ) => {
+  const timer_id = setTimeout( Send( ctx, trans ), delay );
+  ctx.layer.exits.push( () => { clearTimeout( timer_id  ); } )
+};
+
+itag2.every = ( delay ) => ( trans ) => ( ctx ) => {
+  const timer_id = setInterval( Send( ctx, trans ), delay );
+  ctx.layer.exits.push( () => { clearInterval( timer_id  ); } )
+};
 
 
 // TAGS -- BINDINGS
 
-// tags -- hv bind
-// [ On( <str event> ), <fn local-transition> ] -- local anonymous transition
-let On = ( eventName ) => ( trans ) => ( ctx ) => {
+// [ itag2.on( <str event> ), <fn local-transition> ] -- local anonymous transition
+itag2.on = ( eventName ) => ( trans ) => ( ctx ) => {
   const ground = ctx.layer;
-  const handler = ( ev ) => {
-    // TRANSITION:
-    //   1. get value
-    const vs = [ ground.value ];
-    //   2. disembody
-    DisembodyHere( ground.upper );
-    //   3. calculate new value
-    const vs_ = trans( ...vs ) // assume local anonymous transition
-    //   4. embody
-    EmbodyHere( ctx, ...vs_ );
+  const handler = ( ev ) => {                         //   TRANSITION 
+    // console.log( eventName, trans, ctx, ev )
+    const vs = GetValues( ground );                   //   1. get value
+    DisembodyHere( ground );                          //   2. disembody
+    const vs_ = trans( ...vs );                       //   3. calculate new value
+    EmbodyValues( project( { values: vs_ }, ctx ) );  //   4. embody
   }
-  ctx.node.addEventListener( eventName, handler )
-  ctx.layer.exit.push( () => ctx.node.removeEventListener( eventName, ( handler ) ) )
+  ctx.node.addEventListener( eventName, handler );
+  ctx.layer.exits.push( () => ctx.node.removeEventListener( eventName, handler ) )
 };
 
-
-const DisembodyHere = lay => {
-  lay.exit.reverse().forEach( Case
-    ( isFunction , fn => fn()
-    , isNode     , nd => nd.parentNode.removeChild( nd ) 
-    ) 
-  );
-  lay.exit=[];
-};
-
-
-const EmbodyHere = ( ctx, v, ...vs ) => {
+// [ itag2.on( <str event> ), <fn local-transition> ] -- local anonymous transition
+itag2.state = ( entryEvent ) => ( fn ) => ( ctx ) => {
   const ground = ctx.layer;
-  ground.value = v;                                     // set ground value
-    // Embody xlayers
-  const lay = mk_layer( ground );                       // make upper layer w linkning
-  const ctx_ = project( { layer: lay }, ctx );          // make new context w layer one vertical step up
-  for( xlay of ground.xlayers ){                        // calcualte & embody layers from the xlayer defs
-    const itg = as_xlayer( xlay )( ctx.layer.value );
-    itag2fn( itg )( ctx_ );
+  ground.inp = ( v ) => { ctx.node.value = v; }; // set @inp so init code can unify on upper embodiment
+  const handler1 = ( ev ) => {
+    const vs_ =  fn( ev );
+    DisembodyHere( ground );
+    EmbodyValues( project( { values: vs_ }, ctx) );
   }
+  // INIT
+  
+  ground.trans[ 'INIT' ] = handler1( { target: ctx.node } );
+  ctx.node.addEventListener( entryEvent, handler1 )
+  ctx.layer.exits.push( () => ctx.node.removeEventListener( entryEvent, handler1 ) )
+
 };
-
-
-// tags -- hv extend
-let In;      // [ In( <str state> ), <arg>+ ]
-             // [ In( <str ev entry>, <str ev exit> ), <arg>+  ]
-// ex: [ In( focused ), ev => ev.target.name ]
-
-// ex: [ In( mousemoved ), ev => [ ev.clientX, ev.clientY ] ]
-// ex: [ In( mousemoved ), position ]
-
-// ex: [ In( selected ), ev => ev.value ]
-// ex: [ In( selected ), value ]
-
-// ex: [ In( selected/multiple ), ev => { ev.target.name, ev.target.value ]
-// ex: [ In( selected/multiple ), key_value ] -- selected/multiple set existence of key-value pair
-
-
-// ex: [ In( checked ), ev => ev.value ]
-// ex: [ In( checked ), value ]
-
-// ex: [ In( checked ), ev => { ev.name: ev.value } ] 
-// ex: [ In( checked ), key_value ] -- checkboxes set existence of key-value pair
-
-
-
-
 
 // TAGS -- VERTICAL
 
-// [ xLayer, ( <val> → <itag> ) ]
-// [ xLayer, { <val> : <itag> } ]
-const xLayer = xlay => ctx => ctx.layer.xlayers.push( xlay ); // todo: support lexical scoping of <node>
-
-// [ Init, <val> ]     -- constructor (arity 0)
-const Init = v => ctx => ctx.layer.value = v;
+// [ itag2.xlay, ( <val> → <itag> ) ]
+// [ itag2.xlay, { <val> : <itag> } ]
+itag2.xlay = _name => xlay => ctx => ctx.layer.xlays.push( xlay ); // todo: support lexical scoping of <node>
 
 // [ Fn, <str key>, <cafn> ]
-const Trans = ( k, v ) => ctx => ctx.layer.fn[ k ] = v;
+itag2.tran = k => v => ctx => ctx.layer.trans[ k ] = v;
 
 
+// 4. EMBODIMENTATIION
+
+const GetValues = ground => ground && Object.hasOwn( ground, 'val' )? [ ground.val, ...GetValues( ground.upper ) ]: [ ];
+const DisembodyHere = ground => {
+  
+  if( !isObject( ground ) ) return; // nothing to disembody
+  // disembody upper layers
+  if( ground.upper ){
+    DisembodyHere( ground.upper );
+    ground.upper.exits.reverse().forEach( Case
+      ( isFunction , fn => fn()
+      , isNode     , nd => nd.parentNode.removeChild( nd ) 
+      )
+    );
+    ground.upper.exits=[];
+  }
+  // disembody branchings
+  if( isObject( ground.value ) ) for( let [ _k, v ] of Object.entries( ground.value ) ) Disembody( v ) ;
+
+};
+
+const mk_layer = ( ground ) => {
+  const lay = 
+    { env   : {}
+    , exits : []
+    , trans : {}
+    , xlays : []
+    , lower : ground
+    , val: undefined
+    }
+  ;
+  ground.upper = lay;
+  return lay;
+}
+
+// maybe_eval( <fn> | <value> )
+const maybe_eval = x => isFunction( x )? x(): x;
+
+const as_fn = Case
+  ( isObject   , obj => k => obj[ k ]
+  , isFunction , fn  => fn
+  )
+;
+
+const EmbodyValues = ( ctx ) => {
+  console.log('EmbodyValues',ctx)
+  const ground = ctx.layer;
+  let [ v, ...vs ] = ctx.values;
+  v = v !== undefined? v : maybe_eval( ground.trans.INIT ); // default value
+  ground.val = v; // här borde märkas ifall @val unifierats
+
+  if( Object.hasOwn( ground, 'inp' ) ) ground.inp( v );
+  const ctx_ = project( { values: vs }, ctx );
+  const lays = ground.xlays.map( xlay => as_fn( xlay )( v ) );
+  for( let block of lookup2( ground, 'block') ) lays.push([ itag1.class, `${ block }--${ ctx.values.join( '--' ) }` ]);
+  EmbodyLayers( ...lays )( ctx_ );
+};
+
+const EmbodyLayers = ( ...lays ) => ( ctx ) => {
+  console.log('EmbodyLayers',ctx)
+  const ground = ctx.layer;
+  const upper = mk_layer( ground );
+  const ctx_ = project({ layer: upper }, ctx ); // project new layer
+  for( let lay of lays ) itag2fn( lay )( ctx_ );
+  if(  ctx_.values.length >= 1 || upper.trans[ 'INIT' ] !== undefined  ) EmbodyValues( ctx_ );
+  return upper;
+};
 
 
+// SYNTAX
 
-// ---------- Run-time ----------
+// well-behaved split; 
+// + trims off leading and trailing white-space
+// + empty input string returns empty array
+const trimsplit = ( re, str ) => {
+  // console.log(  re, str )
+  str = str.trim();
+  if( !str ) return [];
+  return str.split( re );
+};
 
-// transactions
+const normal_form = ( itg, ...args ) => {
+  // console.log( `[ ${ itg } ${ args.join(' ') }, ... ]` );
+  return itag2[ itg]( ...args );
+};
 
+itag_head2fn = Match
+  ( _Function                      , ( fn )        => fn               // already in functional form
+  // Bracket form 
+   , /^<(\S+?)>/                   , ( tag, rest ) => normal_form( 'mk', tag, ...trimsplit( /\s+/, rest ) )  // a named tag creation
 
+  // itag1
+  , /^html\s*$/                    , ()            => itag1.html 
+
+  // Word prefix form -- time  
+  , /^(after|every) +([0-9.]+)s$/  , ( itg, ms )   => normal_form( itg, ( parseFloat( ms ) ) )
+  , /^(after|every) +([0-9.]+)ms$/ , ( itg, ms )   => normal_form( itg, ( parseFloat( ms ) ) )
+
+  // Word prefix form, general
+  , /^([a-zA-Z]\S+)\s*/            , ( itg, rest ) => normal_form( itg , ...trimsplit( /\s+/, rest ) )  
+
+  // Symbol prefix form
+  , /^!(\S+)$/                     , ( n )         => itag2.on   ( n )          // event binding
+  , /^=(\S+)$/                     , ( n )         => itag2.on   ( n )          // state binding
+  , /^->(\S+)$/                    , ( tr )        => itag2.tran ( tr )         // fn or named transition
+  , /^\^(\S+)$/                    , ( name )      => itag2.xlay ( name )       // a named xlayer
+  , /^\/(\S+)$/                    , ( k )         => itag2.slot( k )          // class
+  , /^\.(\S+)$/                    , ( k )         => () => itag1.class( k )          // class
+  )
+;
+
+const itag2fn = Case
+  ( isFunction , fn => fn
+  , isArray    , ([ head, ...args ]) => itag_head2fn( head )( ...args ) // let head decide syntax of tags
+  , isString   , str => itag1.textnode( str )
+  , isNumber   , num => itag1.textnode( num.toString() )
+               , x   => { throw `non-exhausitve clauses in itags for input ${ x }`}  
+  )
+; 
+
+// REGEXP                         // HEAD FORM
+//--------------------------------//------------ 
+// /^((?:_|[^\s\w])+)\s*(.+)$/    // prefix itag symbols
+// /^<(.+?)>\s+(.+)$/             // bracketfix itag brackets
+// /^([a-zA-Z0-9])\s+(.+)$/       // prefix itag word
+
+/*
+can we have mixed fixity?
+
+parseFloat gives:
+empty
+invalid <str>
+valid <num>
+
+  { empty: [ ... ]
+  , invalid: str => [ ... str ... ]
+  , valid: num => [ ... num ... ] 
+  }
+
+  eller, helt utan speciella regler:
+
+  _parseFloat
+  { empty: [ ... ]
+  , invalid: [ '^invalid', str => ... str ... ]
+  , valid: [ '^convert', num => ... num ... ] 
+  }
+
+  antigen kan _parseFLoat returnera tillstånd som är legala och förväntade i en tillståndsmaskin
+  [ 'empty' ]
+  [ 'invalid', <str> ]
+  [ 'valid', <num> ]
+  -- nu kan vi ha tillstånd som kan speglas till css; TempConv--c2f--invalid etc
+  eller så kan den förvänta en <cafun> och ge sina data till den
+  */

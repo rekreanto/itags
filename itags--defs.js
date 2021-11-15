@@ -19,18 +19,18 @@ let itagFromHeadSyntax;
 // TAGS
 
 // tags -- h_ build
-let Block;      // [ Block, <itag>* ]
-let Mk;         // [ Mk( <tag>, <role>? ), <itag>* ] 
-let The;        // [ The( <role> ), <itag>* ] 
+let itag2.block;      // [ itag2.block, <itag>* ]
+let itag2.mk;         // [ itag2.mk( <tag>, <role>? ), <itag>* ] 
+let itag2.the;        // [ itag2.the( <role> ), <itag>* ] 
 
 // tags -- h_ modify
-let Attr;       // [ Attr, <str key>, <str val>  ]
-let Class;      // [ Class, <str>+ ]
-let Style;      // [ Style, <str key>, <val> ]
+let itag2.attr;       // [ itag2.attr, <str key>, <str val>  ]
+let itag1.Class;      // [ itag1.Class, <str>+ ]
+let itag1.Style;      // [ itag1.Style, <str key>, <val> ]
 
 // tags -- hv bind
 // ... alt 
-let On;         // [ Bind( <str event> ), <transition>, <arg>* ]
+let itag2.on;         // [ Bind( <str event> ), <transition>, <arg>* ]
 
 // tags -- hv extend
 let In;      // [ In( <str state> ), <arg>+ ]

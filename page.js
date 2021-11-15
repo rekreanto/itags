@@ -1,6 +1,6 @@
 let page;
 page = 
-  [ Block
+  [ itag2.block
   , [ '<h1>', "Hello itags!" ]
   , [ '<ul>'
     , [ '<li>', "Hej" ]
@@ -11,10 +11,10 @@ page =
   ];
 
   page = 
-  [ Block
+  [ itag2.block
   , [ '<h1>', "Hello itags!" ]
   , [ '<ul>'
-    , [ Each([1,2,3,4,5])
+    , [ itag2.Each([1,2,3,4,5])
       , x => [ '<li>', `Hej ${ x*1000 } !` ]
       ]
     ]
@@ -22,15 +22,15 @@ page =
 
 
 page100 = 
-  [ Block
+  [ itag2.block
   , [ '<h1>', "Hello itags!" ]
-  , [ '<ul>', [ Each(0,1000), x => [ '<li>', `Hej ${ x } !` ] ] ]
+  , [ '<ul>', [ itag2.Each(0,1000), x => [ '<li>', `Hej ${ x } !` ] ] ]
   ];
 
   
 page = 
-  [ Block
-  , [ '<h1> title', "Hello itags!", [ Attr, 'title', "Hellu itags!" ] ]
+  [ itag2.block
+  , [ '<h1> title', "Hello itags!", [ itag2.attr, 'title', "Hellu itags!" ] ]
   , [ '<ul>'
     , [ '<li>', "Hej" ]
     , [ '<li>', "Hej" ]
@@ -38,9 +38,9 @@ page =
     ]
   , page100
   , [ 'the title'
-    , [ Class, 'nice-class', 'super-nice-class' ]
-    , [ Style, 'background-color', 'green' ]
-    , [ Style, 'color', 'white' ]
+    , [ itag1.Class, 'nice-class', 'super-nice-class' ]
+    , [ itag1.Style, '~background-color', 'green' ]
+    , [ itag1.Style, 'color', 'white' ]
     ]
   ];
 
@@ -52,8 +52,7 @@ page =
  */
 const int2color = n => [ 'red', 'black', 'green' ][ Math.sgn( n ) + 1 ];
 counter = 
-  [ Block( 'Counter' )
-
+  [ itag2.block( 'Counter' )
     , [ '<h1>', "Counter" ]
     , [ '<div> display' ]
     , [ '<div>'
@@ -69,7 +68,7 @@ counter =
     , [ Fn, 'INCR' ,  n => n + 1 ]
 
     , [ Layer, n => [ 'the display', n ] ]
-    , [ Layer, n => [ 'the display', [ Style, 'color', int2color( n ) ] ] ]
+    , [ Layer, n => [ 'the display', [ itag1.Style, 'color', int2color( n ) ] ] ]
   ]
 ;
 
@@ -81,7 +80,7 @@ counter =
  const int2color = n => [ 'red', 'black', 'green' ][ Math.sgn( n ) + 1 ];
 
 counter = 
-  [ Block( 'Counter' )
+  [ itag2.block( 'Counter' )
 
   , [ '<h1>', "Counter" ]
   , [ '<div> display' ]
@@ -93,7 +92,7 @@ counter =
 
     , [ Value, 0 ]
     , [ Layer, n => [ 'the display', n ] ]
-    , [ Layer, n => [ 'the display', [ Style, 'color', int2color( n ) ] ] ]
+    , [ Layer, n => [ 'the display', [ itag1.Style, 'color', int2color( n ) ] ] ]
   ]
 ;
 
@@ -106,7 +105,7 @@ const c2f = c => ( c -32  ) *1.8;
 const f2c = f => ( f /1.8 ) +32 ;
 
 temp_conv = 
-  [ Block( 'TempConv' )
+  [ itag2.block( 'TempConv' )
     , [ '<h1>', "Temperature Converter" ]
     , [ '<div>'
       , [ '<input/number> c'
@@ -140,7 +139,7 @@ temp_conv =
  const f2c = f => ( f /1.8 ) +32 ;
  
  temp_conv = 
-   [ Block( 'TempConv' )
+   [ itag2.block( 'TempConv' )
      , [ '<h1>', "Temperature Converter" ]
      , [ '<div>'
        , [ '<input/number> c' ]
@@ -175,7 +174,7 @@ temp_conv =
  */
 
 temp_conv = 
-  [ Block( 'TempConv' )
+  [ itag2.block( 'TempConv' )
   , [ '<h1>', "Temperature Converter" ]
   , [ '<div>'
     , [ '<input/number> c' ]
@@ -190,18 +189,18 @@ temp_conv =
   , [ Focus, [ Value, 'c' ] ] // reflect the focus as the level A value
   , [ Layer, 
       { c:
-        [ Block
+        [ itag2.block
         , [ 'the c', [ Value, 0 ] ] // reflect this input as the level B value
         , [ 'the arrow', ' =>' ]
         , [ Layer, c => [ 'the f', c2f( c ) ] ]
         ] } ]
   , [ Layer,
       { f:  
-        [ Block
+        [ itag2.block
         , [ 'the arrow', '<= ' ]
         , [ 'the f', [ Value, 0 ] ] // reflect this input as the level B value
         , [ Layer, f => [ 'the c', f2c( f ) ] ]
         ] } ]
-  , [ Layer, k => [ Log, `focus is ${ k }` ] ] // Logging the level A value
+  , [ Layer, k => [ itag1.log, `focus is ${ k }` ] ] // Logging the level A value
   ]
 ;
