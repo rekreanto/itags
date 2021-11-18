@@ -30,7 +30,6 @@ const isSymbol   = x => typeof x === 'symbol';
 const isNode     = x => typeof x  === 'object' && x.nodeType !== undefined;
 const FailNonExhaustive = ( x ) => { throw `Case: Non-exhaustive clauses for input ${ x }` } 
 
-
 const isEq = ( y ) => ( x ) => x === y;
 const isZip = ( preds, xs ) => {
   const len = preds.length;
@@ -64,19 +63,19 @@ const Case = ( ...clauses ) => ( ...xs ) => {
 const Return = x => () => x;
 const Result = ( ...xs ) => [ ...xs ];   
 
-const _pred2pat = ( p ) => ( ...xs ) => ( succ, fail ) => ( p( ...xs )? succ: fail )( ...xs );
+const pred2pat = ( p ) => ( ...xs ) => ( succ, fail ) => ( p( ...xs )? succ: fail )( ...xs );
 
-const _Array    = _pred2pat ( isArray ) ;
-const _Boolean  = _pred2pat ( isBoolean ) ;
-const _Function = _pred2pat ( isFunction ) ;
-const _Number   = _pred2pat ( isNumber ) ;
-const _Object   = _pred2pat ( isObject ) ;
-const _RegExp   = _pred2pat ( isRegExp ) ;
-const _String   = _pred2pat ( isString ) ;
-const _Symbol   = _pred2pat ( isSymbol ) ;
-const _Node     = _pred2pat ( isNode ) ;
+const _Array    = pred2pat ( isArray ) ;
+const _Boolean  = pred2pat ( isBoolean ) ;
+const _Function = pred2pat ( isFunction ) ;
+const _Number   = pred2pat ( isNumber ) ;
+const _Object   = pred2pat ( isObject ) ;
+const _RegExp   = pred2pat ( isRegExp ) ;
+const _String   = pred2pat ( isString ) ;
+const _Symbol   = pred2pat ( isSymbol ) ;
+const _Node     = pred2pat ( isNode ) ;
 
-const _isNaN    = _pred2pat ( isNaN ) ;
+const _isNaN    = pred2pat ( isNaN ) ;
 
 const _parseFloat = str => ( succ, fail ) => Case
   ( isNumber , n => succ( n )
@@ -96,9 +95,14 @@ const _zip = preds => ( ...xs ) => ( succ, fail ) => {
   return succ( ...xs );
 };
 
-const _re = re => x => ( succ, fail ) => {
-  if( !isString( x ) ) return fail( x );
-  const str = x;
+
+const _re0 = re => str => ( succ, fail ) => {
+  const md = re.exec( str );
+  return md? succ( ...md.slice( 1 ) ): fail( str );
+};
+
+const _re = re => str => ( succ, fail ) => {
+  // console.log( re, str );
   const match_data   = re.exec( str );            // try to match
   if( match_data === null ) return fail( str );   // fail with original string
   const captures     = match_data.slice( 1 );     // continue towards succeeding
@@ -118,19 +122,16 @@ const _re_shortform = re => str => ( succ, fail ) => {
   return succ( ...match_data.slice( 1 ), str.substr( match_data.index + match_data[ 0 ].length ) );
 };
 
-// prelude -- patterns
-const isPred = ( fn ) => /^(?:is|has)/.test( fn.name );
-
 const as_pattern = Case
-    ( isPred      , _pred2pat  
-    , isFunction  , fn => fn
-    , isSymbol    , _eq
-    , isString    , _eq
-    , isNumber    , _eq
-    , isRegExp    , _re
+    ( isFunction , fn => fn
+    , isString   , _eq
+    , isNumber   , _eq
+    , isRegExp   , _re
 //  , isArray    , _zip 
     )
   ;
+
+// prelude -- patterns
 
 // Match( ( <pattern>, <fn> )+ | <fn> )
 const Match = ( ...pfs ) => ( ...xs ) => {
@@ -279,12 +280,9 @@ itag2.on = ( eventName ) => ( trans ) => ( ctx ) => {
     DisembodyHere( ground );                          //   2. disembody
     const vs_ = trans( ...vs );                       //   3. calculate new value
     EmbodyValues( project( { values: vs_ }, ctx ) );  //   4. embody
-    Observe();
   }
-
   ctx.node.addEventListener( eventName, handler );
   ctx.layer.exits.push( () => ctx.node.removeEventListener( eventName, handler ) )
-  Observe();
 };
 
 // [ itag2.on( <str event> ), <fn local-transition> ] -- local anonymous transition
@@ -295,15 +293,13 @@ itag2.state = ( entryEvent ) => ( fn ) => ( ctx ) => {
     const vs_ =  fn( ev );
     DisembodyHere( ground );
     EmbodyValues( project( { values: vs_ }, ctx) );
-    Observe();
   }
-  
   // INIT
   
   ground.trans[ 'INIT' ] = handler1( { target: ctx.node } );
   ctx.node.addEventListener( entryEvent, handler1 )
   ctx.layer.exits.push( () => ctx.node.removeEventListener( entryEvent, handler1 ) )
-  Observe();
+
 };
 
 // TAGS -- VERTICAL
@@ -361,7 +357,7 @@ const as_fn = Case
 ;
 
 const EmbodyValues = ( ctx ) => {
-  // console.log('EmbodyValues',ctx)
+  console.log('EmbodyValues',ctx)
   const ground = ctx.layer;
   let [ v, ...vs ] = ctx.values;
   v = v !== undefined? v : maybe_eval( ground.trans.INIT ); // default value
@@ -375,7 +371,7 @@ const EmbodyValues = ( ctx ) => {
 };
 
 const EmbodyLayers = ( ...lays ) => ( ctx ) => {
-  // console.log('EmbodyLayers',ctx)
+  console.log('EmbodyLayers',ctx)
   const ground = ctx.layer;
   const upper = mk_layer( ground );
   const ctx_ = project({ layer: upper }, ctx ); // project new layer
@@ -436,32 +432,37 @@ const itag2fn = Case
   )
 ; 
 
+// REGEXP                         // HEAD FORM
+//--------------------------------//------------ 
+// /^((?:_|[^\s\w])+)\s*(.+)$/    // prefix itag symbols
+// /^<(.+?)>\s+(.+)$/             // bracketfix itag brackets
+// /^([a-zA-Z0-9])\s+(.+)$/       // prefix itag word
 
+/*
+can we have mixed fixity?
 
-// Demo / Test
+parseFloat gives:
+empty
+invalid <str>
+valid <num>
 
-const test_cond = Match
-  ( 42             , _ => `FortyTwo`
-  , isObject    , x => `Object` // första ordnignens pred-fn konverteras till CPS patterns
-  , /^(\d+)..(\d+)$/ , ( a, b ) => `Range from ${a} to ${b}`
-  , /^([a-z]+)..([A-Z]+)/ , ( a, b, rest ) => `Range from ${a} to ${b}, rest: ${rest}`
-  
-  , _Number    , num => `Number`
-  , _Array     , arr => `Array`
-  , _RegExp    , x => `RegExp`
-  , _String    , str => `String`
-  , _Symbol    , sym => `Symbol`
-  , _Function  , fn => `Function` 
-               , ( ...xs ) => { throw `No clause matching input >>>${ JSON.stringify( xs ) }<<<`; } 
-  )
-;
-//console.assert( test_cond( { k: 451 } ) === `has value 451`, `{ k: 451 } ) === has value 451` )
-console.assert( test_cond( "Hej" ) === "String", `test_cond( "Hej" ) === "String"` );
-console.assert( test_cond( 42 ) === "FortyTwo",  `test_cond( 42 ) === "FortyTwo"` );
-console.assert( test_cond( 43 ) === "Number", `test_cond( 43 )` );
-console.assert( test_cond( [1,2,3] ) === "Array", `test_cond( [1,2,3] )` );
-console.assert( test_cond( {a:5} ) === "Object", `test_cond( {a:5} ) === "Object"` );
-console.assert( test_cond( /yo/ ) === "RegExp", `test_cond( /yo/ ) === "RegExp"` );
-console.assert( test_cond( '10..42' ) === "Range from 10 to 42", `'10..42' ) === "Range from 10 to 42"` );
-console.assert( test_cond( 'abc..DEF-ghi' ) === "Range from abc to DEF, rest: -ghi", `test_cond( 'abc..DEF-123456' ) === "Range from abc to DEF, rest: -123456` );
-console.assert( test_cond( Symbol('MySymbol') ) === "Symbol", `Symbol('MySymbol') ) === "Symbol"` );
+  { empty: [ ... ]
+  , invalid: str => [ ... str ... ]
+  , valid: num => [ ... num ... ] 
+  }
+
+  eller, helt utan speciella regler:
+
+  _parseFloat
+  { empty: [ ... ]
+  , invalid: [ '^invalid', str => ... str ... ]
+  , valid: [ '^convert', num => ... num ... ] 
+  }
+
+  antigen kan _parseFLoat returnera tillstånd som är legala och förväntade i en tillståndsmaskin
+  [ 'empty' ]
+  [ 'invalid', <str> ]
+  [ 'valid', <num> ]
+  -- nu kan vi ha tillstånd som kan speglas till css; TempConv--c2f--invalid etc
+  eller så kan den förvänta en <cafun> och ge sina data till den
+  */
