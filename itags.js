@@ -455,6 +455,7 @@ const test_cond = Match
                , ( ...xs ) => { throw `No clause matching input >>>${ JSON.stringify( xs ) }<<<`; } 
   )
 ;
+
 //console.assert( test_cond( { k: 451 } ) === `has value 451`, `{ k: 451 } ) === has value 451` )
 console.assert( test_cond( "Hej" ) === "String", `test_cond( "Hej" ) === "String"` );
 console.assert( test_cond( 42 ) === "FortyTwo",  `test_cond( 42 ) === "FortyTwo"` );
