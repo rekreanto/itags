@@ -10,20 +10,21 @@
 // 1. NAMESPACES
 
 // namespaces for itags off different valence (number of applications)
-const itag0 = {};
-const itag1 = {};
-const itag2 = {};
+$$ = {};
+const $0 = {};
+const $1 = {};
+const $2 = {};
 
 
 // 2. PRELUDE
 
 // prelude -- predicates
 
-const isArray    = x => Array.isArray(x);
+const isArray    = x => Array.isArray( x );
 const isBoolean  = x => typeof x === 'boolean';
 const isFunction = x => typeof x === 'function';
 const isNumber   = x => typeof x === 'number' && isFinite(x);
-const isObject   = x => x && typeof x === 'object' && x.constructor === Object 
+const isObjectLiteral   = x => x && typeof x === 'object' && x.constructor === Object 
 const isRegExp   = x => x && typeof x === 'object' && x.constructor === RegExp;
 const isString   = x => typeof x === 'string' || x instanceof String;
 const isSymbol   = x => typeof x === 'symbol';
@@ -70,7 +71,7 @@ const _Array    = _pred2pat ( isArray ) ;
 const _Boolean  = _pred2pat ( isBoolean ) ;
 const _Function = _pred2pat ( isFunction ) ;
 const _Number   = _pred2pat ( isNumber ) ;
-const _Object   = _pred2pat ( isObject ) ;
+const _Object   = _pred2pat ( isObjectLiteral ) ;
 const _RegExp   = _pred2pat ( isRegExp ) ;
 const _String   = _pred2pat ( isString ) ;
 const _Symbol   = _pred2pat ( isSymbol ) ;
@@ -148,32 +149,42 @@ const Match = ( ...pfs ) => ( ...xs ) => {
 // tags -- helpers
 const project = ( ...ctxs ) =>  Object.assign( {}, ...ctxs.reverse() ); // inefficient
 
-// [ itag1.layer, <itag>* ]  
-itag1.layer = ( ...itags ) => ( ctx ) => {
-  for( let itag of itags ) itag2fn( itag )( ctx );      // process itag syntax
+// [ $1.layer, <itag>* ]  
+$1.layer = ( ...itags ) => ( ctx ) => {
+  for( let itag of itags ) $2fn( itag )( ctx );      // process itag syntax
 }; // entry 
 
 
-// [ itag2.block( <name> ), <itag>* ]  
-itag2.block = ( ...names ) => ( ...itags ) => ( ctx ) => {
-  for( let name of names ) itag1.class( name )( ctx );
-  ctx.layer.block = names;
-  itag1.layer( ...itags )( ctx );
+// [ $2.block( <name> ), <itag>* ]  
+$2.block = ( ...names ) => ( ...itags ) => ( ctx ) => {
+  for( let name of names ) $1.class( name )( ctx );
+  ctx.layer.env[ '_block_' ] = names;
+  $1.layer( ...itags )( ctx );
 }; // entry
 
-itag1.html = str => ctx => {
+// identity itag valence 1
+$1.id = ( ...itags ) => ( ctx ) => {
+  for( let itag of itags ) $2fn( itag )( ctx ); 
+};
+// identity itag valence 2
+$2.id = () => ( ...itags ) => ( ctx ) => {
+  for( let itag of itags ) $2fn( itag )( ctx ); 
+};
+
+
+$1.html = str => ctx => {
   // if not empty => non-monotonic
   ctx.node.innerHTML = str;
 }
 
-itag1.textnode = ( ...strs ) => ( ctx ) => {
+$1.textnode = ( ...strs ) => ( ctx ) => {
   const el = document.createTextNode( strs.join( '' ) );
   ctx.node.appendChild( el );
   ctx.layer.exits.push( el );  // store exit
 }; // entry 
 
-// [ itag2.mk( <tag>, <role>? ), <itag>* ] 
-itag2.mk = ( tag, role ) => ( ...itags ) => ( ctx ) => {
+// [ $2.mk( <tag>, <role>? ), <itag>* ] 
+$2.mk = ( tag, role ) => ( ...itags ) => ( ctx ) => {
   const [ tagName, type ] = tag.split('/');
   const el = document.createElement( tagName );          // create elem
   ctx.layer.exits.push( el );                         // store exit effect
@@ -182,41 +193,40 @@ itag2.mk = ( tag, role ) => ( ...itags ) => ( ctx ) => {
   if( role ) el.setAttribute( 'name', role );
   if( role ){
     ctx.layer.env[ role ] = el;                      // make elem referable
-    const blocks = lookup2( ctx.layer, 'block' );
-    for( let block of blocks ) itag1.class( `${ block }__${ role }` )( ctx_ ); // add BEM class, use for precise targeting in CSS
+    const blocks = ctx.layer.lookup( '_block_' );
+    for( let block of blocks ) $1.class( `${ block }__${ role }` )( ctx_ ); // add BEM class, use for precise targeting in CSS
   };
-  itag1.layer( ...itags )( ctx_ ); // process child itags 
+  $1.layer( ...itags )( ctx_ ); // process child itags 
   ctx.node.appendChild( el );      // mount element
 }; // entry 
 
-const lookup2 = ( lay, k ) => lay.hasOwnProperty( k )? lay[ k ]: lookup2( lay.lower, k );
-const lookup3 = ( lay, k1, k2 ) => lay[k1].hasOwnProperty( k2 )? lay[ k1 ][ k2 ]: lookup3( lay.lower, k1, k2 );
 
-// [ itag2.the( <key> ), <itag>* ] 
-itag2.the = ( role ) => ( ...itags ) => ( ctx ) => {
+// [ $2.the( <key> ), <itag>* ] 
+$2.the = ( k ) => ( ...itags ) => ( ctx ) => {
   // process child itags in horizontally projected context
-  const nd = lookup3( ctx.layer, 'env', role );
-  itag1.layer( ...itags )( project( { node: nd }, ctx ) );
+  // const nd = lookup3( ctx.layer, 'env', k );
+  const nd = ctx.layer.lookup( k )
+  $1.layer( ...itags )( project( { node: nd }, ctx ) );
 }; // entry
 
 const Each__Arr = xs => x2itag => ctx => { 
-  xs.forEach( ( ...xs ) => itag2fn( x2itag( ...xs ) )( ctx ) );
+  xs.forEach( ( ...xs ) => $2fn( x2itag( ...xs ) )( ctx ) );
 };
 
 const Each__NumNum = ( a, b ) => x2itag => ctx => {
   let N = Math.abs( b - a );
   let m = Math.min( a, b );
   let n = 0;
-  while( n <= N ) itag2fn( x2itag( m + n++ ) )( ctx );
+  while( n <= N ) $2fn( x2itag( m + n++ ) )( ctx );
 };
-itag2.Each = Case
+$2.Each = Case
   ( isArray  , Each__Arr
   , isNumber , Each__NumNum 
   )
 ;
 
-// [ itag2.attr, <str key>, <str val>  ]
-itag2.attr = ( k ) => ( val ) => ( ctx ) => {
+// [ $2.attr, <str key>, <str val>  ]
+$2.attr = ( k ) => ( val ) => ( ctx ) => {
   // prepare
   const isShadowed = ctx.node.hasAttribute( k );
   const shadowedValue = ctx.node[ k ];
@@ -231,8 +241,8 @@ itag2.attr = ( k ) => ( val ) => ( ctx ) => {
 };
 
 
-// [ itag1.class, <str>+ ]
-itag1.class = ( cl ) => ( ctx ) => {
+// [ $1.class, <str>+ ]
+$1.class = ( cl ) => ( ctx ) => {
 
   if( ctx.node.classList.contains( cl ) ) console.error( `Non-monotonic add of class '${ cl }''` );
   ctx.node.classList.add( cl );
@@ -240,29 +250,33 @@ itag1.class = ( cl ) => ( ctx ) => {
 
 };
 
-// [ itag1.style, <str key>, <val> ]
-itag1.style = ( k, v ) => itag2. style( k )( v );
+// [ $1.style, <str key>, <val> ]
+$1.style = ( k, v ) => $2. style( k )( v );
 
-// [ itag1.style, <str key>, <val> ]
-itag2.style = ( k ) => ( v ) => ( ctx ) => {
-  if( ctx.node.style.getPropertyValue( k ) !== '' ) console.error( `Non-monotonic add of itag1.style( '${ k }', '${ v }' )` );
+// [ $1.style, <str key>, <val> ]
+$2.style = ( k ) => ( v ) => ( ctx ) => {
+  if( ctx.node.style.getPropertyValue( k ) !== '' ) console.error( `Non-monotonic add of $1.style( '${ k }', '${ v }' )` );
   ctx.node.style[ k ] = v;
   ctx.layer.exits.push( () => { ctx.node.style.removeProperty( k ); } );
 };
 
 
-itag0.select = () => ctx => { ctx.node.select(); }
-itag1.log = msg => ctx => { console.log( msg, ctx ); };
+$0.select = () => ctx => { ctx.node.select(); }
+$1.log = msg => ctx => {
+  console.log( "EMB ", msg, ctx );
+  ctx.layer.exits.push( ()=>console.log( "DIS", msg, ctx ) );
+  
+};
 
 
 // TAGS -- TIME
 
-itag2.after = ( delay ) => ( trans ) => ( ctx ) => {
+$2.after = ( delay ) => ( trans ) => ( ctx ) => {
   const timer_id = setTimeout( Send( ctx, trans ), delay );
   ctx.layer.exits.push( () => { clearTimeout( timer_id  ); } )
 };
 
-itag2.every = ( delay ) => ( trans ) => ( ctx ) => {
+$2.every = ( delay ) => ( trans ) => ( ctx ) => {
   const timer_id = setInterval( Send( ctx, trans ), delay );
   ctx.layer.exits.push( () => { clearInterval( timer_id  ); } )
 };
@@ -270,13 +284,13 @@ itag2.every = ( delay ) => ( trans ) => ( ctx ) => {
 
 // TAGS -- BINDINGS
 
-// [ itag2.on( <str event> ), <fn local-transition> ] -- local anonymous transition
-itag2.on = ( eventName ) => ( trans ) => ( ctx ) => {
+// [ $2.on( <str event> ), <fn local-transition> ] -- local anonymous transition
+$2.on = ( eventName ) => ( trans ) => ( ctx ) => {
   const ground = ctx.layer;
   const handler = ( ev ) => {                         //   TRANSITION 
     // console.log( eventName, trans, ctx, ev )
-    const vs = GetValues( ground );                   //   1. get value
-    DisembodyHere( ground );                          //   2. disembody
+    const vs = ground.getState();                   //   1. get value
+    ground.doDisembody();                          //   2. disembody
     const vs_ = trans( ...vs );                       //   3. calculate new value
     EmbodyValues( project( { values: vs_ }, ctx ) );  //   4. embody
     Observe();
@@ -287,13 +301,13 @@ itag2.on = ( eventName ) => ( trans ) => ( ctx ) => {
   Observe();
 };
 
-// [ itag2.on( <str event> ), <fn local-transition> ] -- local anonymous transition
-itag2.state = ( entryEvent ) => ( fn ) => ( ctx ) => {
+// [ $2.on( <str event> ), <fn local-transition> ] -- local anonymous transition
+$2.state = ( entryEvent ) => ( fn ) => ( ctx ) => {
   const ground = ctx.layer;
   ground.inp = ( v ) => { ctx.node.value = v; }; // set @inp so init code can unify on upper embodiment
   const handler1 = ( ev ) => {
     const vs_ =  fn( ev );
-    DisembodyHere( ground );
+    ground.doDisembody();
     EmbodyValues( project( { values: vs_ }, ctx) );
     Observe();
   }
@@ -308,60 +322,89 @@ itag2.state = ( entryEvent ) => ( fn ) => ( ctx ) => {
 
 // TAGS -- VERTICAL
 
-// [ itag2.xlay, ( <val> → <itag> ) ]
-// [ itag2.xlay, { <val> : <itag> } ]
-itag2.xlay = _name => xlay => ctx => ctx.layer.xlays.push( xlay ); // todo: support lexical scoping of <node>
+// [ $2.xlay, ( <val> → <itag> ) ]
+// [ $2.xlay, { <val> : <itag> } ]
+// $2.xlay = _name => xlay => ctx => ctx.layer.xlays.push( { node: ctx.node, xlay } ); // scoped xlays
+$2.xlay = _name => xlay => ctx => ctx.layer.xlays.push( xlay ); // scoped xlays
 
 // [ Fn, <str key>, <cafn> ]
-itag2.tran = k => v => ctx => ctx.layer.trans[ k ] = v;
+$2.tran = k => v => ctx => ctx.layer.trans[ k ] = v;
 
 
 // 4. EMBODIMENTATIION
 
-const GetValues = ground => ground && Object.hasOwn( ground, 'val' )? [ ground.val, ...GetValues( ground.upper ) ]: [ ];
-const DisembodyHere = ground => {
-  
-  if( !isObject( ground ) ) return; // nothing to disembody
-  // disembody upper layers
-  if( ground.upper ){
-    DisembodyHere( ground.upper );
-    ground.upper.exits.reverse().forEach( Case
-      ( isFunction , fn => fn()
-      , isNode     , nd => nd.parentNode.removeChild( nd ) 
-      )
-    );
-    ground.upper.exits=[];
+// 5. LAYERS
+
+
+class LayerOneOf{
+  constructor( ground ){
+    this.env = {};
+    this.exits = [];
+    this.trans = {};
+    this.xlays = [];         // embodiments
+    this.lower = ground;
+    ground.upper = this;
   }
-  // disembody branchings
-  if( isObject( ground.value ) ) for( let [ _k, v ] of Object.entries( ground.value ) ) Disembody( v ) ;
 
-};
-
-const mk_layer = ( ground ) => {
-  const lay = 
-    { env   : {}
-    , exits : []
-    , trans : {}
-    , xlays : []
-    , lower : ground
-    , val: undefined
+  // disembody all layers above this ground
+  doDisembody(){
+    if( this.upper ){
+      this.upper.doDisembody();                 // disembody upper layers first
+      this.upper.exits.reverse().forEach( Case  // disembody this layer, last-first
+        ( isFunction , fn => fn()
+        , isNode     , nd => nd.parentNode.removeChild( nd ) ) );
+      this.upper.exits = [];                    // remove the exits preparing for next embodiment
+      delete this.upper;                        // delete ref to upper layer
     }
-  ;
-  ground.upper = lay;
-  return lay;
+
+  }
+
+  // doEmbody
+  doEmbody( x, ...xs ){
+    // välj vad som ska embodimenteras
+    // xlayer defs are assumed to be lexically scoped
+    // make a new layer to be used by
+    const layer = new $$.layer.one( this );
+    this.upper = layer;
+    this.xlays.map( ({ node, xlay }) => Case
+      ( isFunction      , fn  => $2fn( fn( x, ...xs  ) )({ node, layer, values: [] })
+      , isObjectLiteral , obj => $2fn( obj[ x ] )({ node, layer, values: xs })
+      )( xlay ) )
+  }
+  // getState( <arr result> ) -- pushes the state value to the given array
+  getState( arr=[] ){
+    if( Object.hasOwn( this, 'val' ) ){ // a layer with no val is a top layer
+      arr.push( this.val );
+      this.upper.getState( arr );
+    }
+    return arr;
+  }
+
+  // used by $2.the( <str key> )
+  lookup( k ){
+    return Object.hasOwn( this.env, k )? this.env[ k ]: this.lower.lookup( k );
+  }
 }
+
+$$.layer = {};
+$$.layer.zero = LayerOneOf;
+$$.layer.one_of = LayerOneOf;
+$$.layer.pattern = LayerOneOf;
+
+
+const mk_layer = ( ground ) => new $$.layer.one( ground );
 
 // maybe_eval( <fn> | <value> )
 const maybe_eval = x => isFunction( x )? x(): x;
 
 const as_fn = Case
-  ( isObject   , obj => k => obj[ k ]
-  , isFunction , fn  => fn
+  ( isObjectLiteral   , obj => k => obj[ k ]
+  , isFunction        , fn  => fn
   )
 ;
 
 const EmbodyValues = ( ctx ) => {
-  // console.log('EmbodyValues',ctx)
+  console.log('EmbodyValues',ctx)
   const ground = ctx.layer;
   let [ v, ...vs ] = ctx.values;
   v = v !== undefined? v : maybe_eval( ground.trans.INIT ); // default value
@@ -370,7 +413,7 @@ const EmbodyValues = ( ctx ) => {
   if( Object.hasOwn( ground, 'inp' ) ) ground.inp( v );
   const ctx_ = project( { values: vs }, ctx );
   const lays = ground.xlays.map( xlay => as_fn( xlay )( v ) );
-  for( let block of lookup2( ground, 'block') ) lays.push([ itag1.class, `${ block }--${ ctx.values.join( '--' ) }` ]);
+  for( let block of ground.lookup( '_block_' ) ) lays.push([ $1.class, `${ block }--${ ctx.values.join( '--' ) }` ]);
   EmbodyLayers( ...lays )( ctx_ );
 };
 
@@ -379,8 +422,11 @@ const EmbodyLayers = ( ...lays ) => ( ctx ) => {
   const ground = ctx.layer;
   const upper = mk_layer( ground );
   const ctx_ = project({ layer: upper }, ctx ); // project new layer
-  for( let lay of lays ) itag2fn( lay )( ctx_ );
-  if(  ctx_.values.length >= 1 || upper.trans[ 'INIT' ] !== undefined  ) EmbodyValues( ctx_ );
+  for( let lay of lays ) $2fn( lay )( ctx_ );
+  
+  if(  ctx_.values.length >= 1 || upper.trans[ 'INIT' ] !== undefined  ){
+    EmbodyValues( ctx_ );
+  }
   return upper;
 };
 
@@ -391,24 +437,52 @@ const EmbodyLayers = ( ...lays ) => ( ctx ) => {
 // + trims off leading and trailing white-space
 // + empty input string returns empty array
 const trimsplit = ( re, str ) => {
-  // console.log(  re, str )
+  // console.log(  re, str );
   str = str.trim();
+  // console.log(  re, str );
   if( !str ) return [];
-  return str.split( re );
+  const matches =  str.split( re );
+  // console.log( 'matches: ', matches );
+  return matches;
 };
 
+const match_types = ( str ) => {
+  maybe_arr = str.match( /<[^>]*>/ );
+  return maybe_arr? maybe_arr.map( s => s.slice(1,-1) ): []; // remove brackets
+}
 const normal_form = ( itg, ...args ) => {
   // console.log( `[ ${ itg } ${ args.join(' ') }, ... ]` );
-  return itag2[ itg]( ...args );
+  return $2[ itg]( ...args );
 };
 
-itag_head2fn = Match
-  ( _Function                      , ( fn )        => fn               // already in functional form
-  // Bracket form 
-   , /^<(\S+?)>/                   , ( tag, rest ) => normal_form( 'mk', tag, ...trimsplit( /\s+/, rest ) )  // a named tag creation
+// the layer tag
+// $2.layer = ( <str key-arity>, <str+ keys> ) 
+$2.layer = ( key_arity, ...args ) => ( ...itags ) => ctx => {
+  console.log( '$2.layer: ', key_arity, ...args   );
+/*   const ground = new $$.layer[ key_arity ]( ...args ); // make new layer
+  ctx.layer.upper = ground;                            // double-link new layer with parent layer
+  ground.lower = ctx.layer;
+  const ctx_ = project( { layer: ground }, ctx );      // project new layer into context
+  for( let itag of itags ) $2fn( itag )( ctx );        // evaluate all child itags in the projected context */
+  for( let itag of itags ) $2fn( itag )( ctx ); 
+};
 
-  // itag1
-  , /^html\s*$/                    , ()            => itag1.html 
+
+itag_head2fn = Match
+  ( _Function         , ( fn )        => fn               // already in functional form
+  // Bracket form 
+   , /^<(\S+?)>/      , ( tag, rest ) => normal_form( 'mk', tag, ...trimsplit( /\s+/, rest ) )  // a named tag creation
+
+  // $1
+  , /^html\s*$/       , ()            => $1.html 
+
+  // layer head
+  , /^--$/            , ( )           => $2.layer( 'zero' )
+  , /^--top$/        , ( )            => $2.layer( 'zero' )
+  , /^--zero$/        , ( )           => $2.layer( 'zero' )
+  , /^--([a-z]+) of/  , ( aka, rest ) => $2.layer( aka, ...trimsplit( /\s+/, rest ) )
+  , /^--<([^>]*)>/    , ( type, types )  => $2.layer( 'pattern', type, ...match_types( types ) )
+
 
   // Word prefix form -- time  
   , /^(after|every) +([0-9.]+)s$/  , ( itg, ms )   => normal_form( itg, ( parseFloat( ms ) ) )
@@ -418,20 +492,20 @@ itag_head2fn = Match
   , /^([a-zA-Z]\S+)\s*/            , ( itg, rest ) => normal_form( itg , ...trimsplit( /\s+/, rest ) )  
 
   // Symbol prefix form
-  , /^!(\S+)$/                     , ( n )         => itag2.on   ( n )          // event binding
-  , /^=(\S+)$/                     , ( n )         => itag2.on   ( n )          // state binding
-  , /^->(\S+)$/                    , ( tr )        => itag2.tran ( tr )         // fn or named transition
-  , /^\^(\S+)$/                    , ( name )      => itag2.xlay ( name )       // a named xlayer
-  , /^\/(\S+)$/                    , ( k )         => itag2.slot( k )          // class
-  , /^\.(\S+)$/                    , ( k )         => () => itag1.class( k )          // class
+  , /^!(\S+)$/                     , ( n )         => $2.on   ( n )          // event binding
+  , /^=(\S+)$/                     , ( n )         => $2.on   ( n )          // state binding
+  , /^->(\S+)$/                    , ( tr )        => $2.tran ( tr )         // fn or named transition
+  , /^\^(\S+)$/                    , ( name )      => $2.xlay ( name )       // a named xlayer
+  , /^\/(\S+)$/                    , ( k )         => $2.slot( k )          // class
+  , /^\.(\S+)$/                    , ( k )         => () => $1.class( k )          // class
   )
 ;
 
-const itag2fn = Case
+const $2fn = Case
   ( isFunction , fn => fn
   , isArray    , ([ head, ...args ]) => itag_head2fn( head )( ...args ) // let head decide syntax of tags
-  , isString   , str => itag1.textnode( str )
-  , isNumber   , num => itag1.textnode( num.toString() )
+  , isString   , str => $1.textnode( str )
+  , isNumber   , num => $1.textnode( num.toString() )
                , x   => { throw `non-exhausitve clauses in itags for input ${ x }`}  
   )
 ; 
@@ -441,9 +515,9 @@ const itag2fn = Case
 // Demo / Test
 
 const test_cond = Match
-  ( 42             , _ => `FortyTwo`
-  , isObject    , x => `Object` // första ordnignens pred-fn konverteras till CPS patterns
-  , /^(\d+)..(\d+)$/ , ( a, b ) => `Range from ${a} to ${b}`
+  ( 42                    , _ => `FortyTwo`
+  , isObjectLiteral       , x => `Object` // första ordnignens pred-fn konverteras till CPS patterns
+  , /^(\d+)..(\d+)$/      , ( a, b ) => `Range from ${a} to ${b}`
   , /^([a-z]+)..([A-Z]+)/ , ( a, b, rest ) => `Range from ${a} to ${b}, rest: ${rest}`
   
   , _Number    , num => `Number`

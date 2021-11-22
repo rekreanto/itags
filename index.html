@@ -19,17 +19,17 @@
 <body> 
   <script>
     let lay;
-  
-    //page = { app: BasicCounter1 , values:  [ 42 ] };
-    // page = { app: BasicCounter2 , values:  [ 1042 ] };
-    // page = { app: BasicCounter2a, values: [ 2042 ] };
-    // page = { app: TempConv      , values: [ 'f', '451' ] };
-    page = { app: BasicCounter , values:  [ 0 ] };
 
-    const Observe = () => { console.log( GetValues( lay ) ) }
-    window.addEventListener( 'DOMContentLoaded', ()=>{
+    page = { app: TempConv      , values: [ 'f', '451' ] };
+    // page = { app: BasicCounter , values:  [ 0 ] };
+
+    const Observe = () => {
+      //console.log( "= ", ...lay.upper.getState() )
+    };
+    window.addEventListener( 'DOMContentLoaded', () => {
       const t0 = performance.now();
-      lay = EmbodyLayers( page.app )({ node: document.body, layer: {}, values: page.values });
+      lay = {};
+      EmbodyLayers( page.app )({ node: document.body, layer: lay, values: page.values });
       const t1 = performance.now();
       console.log((t1-t0).toFixed(2),"ms")
 

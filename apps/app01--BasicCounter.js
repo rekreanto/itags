@@ -1,7 +1,8 @@
 const num2sign = n => [ 'negative', 'zero', 'positive' ][ Math.sign( n ) + 1 ];
 
 const BasicCounter = 
-  [ 'block BasicCounter'
+[ '--<int>'//itag2.layer( 'pattern', 'int' )//'--<int>'
+, [ 'block BasicCounter'
   // Horizontal & Bindings
   , [ '<h1> title', "Basic Counter" ]
   , [ '<div> display' ]
@@ -14,10 +15,12 @@ const BasicCounter =
     ]
   // Vertical
   , [ '->INIT', ()=>[0] ]
-  , [ '^show-number', n => [ 'the display', n ] ]                         // display number
-  , [ '^show-sign'  , n => [ 'the display', [ itag1.class, num2sign( n ) ] ] ]  // visualize sign 
-  ]
-; // 13SLOC
+  , [ '^display-stuff', n => 
+      [ '--'
+      , [ 'the display'
+        , n                                // display number
+        , [ itag1.class, num2sign( n ) ]   // visualize sign
+        ] ] ] ] ];
 
 
 const BasicCounter_each = 
