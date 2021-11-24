@@ -1,7 +1,7 @@
 const num2sign = n => [ 'negative', 'zero', 'positive' ][ Math.sign( n ) + 1 ];
 
 const BasicCounter = 
-[ '--<int>'//itag2.layer( 'pattern', 'int' )//'--<int>'
+[ '--<int>'//$2.layer( 'pattern', 'int' )//'--<int>'
 , [ 'block BasicCounter'
   // Horizontal & Bindings
   , [ '<h1> title', "Basic Counter" ]
@@ -18,8 +18,8 @@ const BasicCounter =
   , [ '^display-stuff', n => 
       [ '--'
       , [ 'the display'
-        , n                                // display number
-        , [ itag1.class, num2sign( n ) ]   // visualize sign
+        , n                              // display number
+        , [ $1.class, num2sign( n ) ]   // visualize sign
         ] ] ] ] ];
 
 
@@ -29,14 +29,14 @@ const BasicCounter_each =
   , [ '<h1> title', "Basic Counter 3" ]
   , [ '<div> display' ]
   , [ '<div> buttons' 
-    , [ itag2.Each([ 1000, 100, 10, 1 ]), dn => [ '<button>', "-", dn , [ 'on click',   n => [ n - dn ] ] ] ] 
+    , [ $2.Each([ 1000, 100, 10, 1 ]), dn => [ '<button>', "-", dn , [ 'on click',   n => [ n - dn ] ] ] ] 
     , [ '<button>', "0", [ 'on click',  _n => [ 0 ] ] ]
-    , [ itag2.Each([ 1, 10, 100, 1000 ]), dn => [ '<button>', "+", dn , [ 'on click',   n => [ n + dn ] ] ] ]
+    , [ $2.Each([ 1, 10, 100, 1000 ]), dn => [ '<button>', "+", dn , [ 'on click',   n => [ n + dn ] ] ] ]
     ]
   // Vertical
   , [ '->INIT', 0 ]
   , [ '^show-number', n => [ 'the display', n ] ]                         // display number
-  , [ '^show-sign'  , n => [ 'the display', [ itag1.class, num2sign( n ) ] ] ]  // visualize sign 
+  , [ '^show-sign'  , n => [ 'the display', [ $1.class, num2sign( n ) ] ] ]  // visualize sign 
   ]
 ; // 11SLOC
 

@@ -151,7 +151,7 @@ const project = ( ...ctxs ) =>  Object.assign( {}, ...ctxs.reverse() ); // ineff
 
 // [ $1.layer, <itag>* ]  
 $1.layer = ( ...itags ) => ( ctx ) => {
-  for( let itag of itags ) $2fn( itag )( ctx );      // process itag syntax
+  for( let itag of itags ) itag2fn( itag )( ctx );      // process itag syntax
 }; // entry 
 
 
@@ -164,11 +164,11 @@ $2.block = ( ...names ) => ( ...itags ) => ( ctx ) => {
 
 // identity itag valence 1
 $1.id = ( ...itags ) => ( ctx ) => {
-  for( let itag of itags ) $2fn( itag )( ctx ); 
+  for( let itag of itags ) itag2fn( itag )( ctx ); 
 };
 // identity itag valence 2
 $2.id = () => ( ...itags ) => ( ctx ) => {
-  for( let itag of itags ) $2fn( itag )( ctx ); 
+  for( let itag of itags ) itag2fn( itag )( ctx ); 
 };
 
 
@@ -210,14 +210,14 @@ $2.the = ( k ) => ( ...itags ) => ( ctx ) => {
 }; // entry
 
 const Each__Arr = xs => x2itag => ctx => { 
-  xs.forEach( ( ...xs ) => $2fn( x2itag( ...xs ) )( ctx ) );
+  xs.forEach( ( ...xs ) => itag2fn( x2itag( ...xs ) )( ctx ) );
 };
 
 const Each__NumNum = ( a, b ) => x2itag => ctx => {
   let N = Math.abs( b - a );
   let m = Math.min( a, b );
   let n = 0;
-  while( n <= N ) $2fn( x2itag( m + n++ ) )( ctx );
+  while( n <= N ) itag2fn( x2itag( m + n++ ) )( ctx );
 };
 $2.Each = Case
   ( isArray  , Each__Arr
@@ -335,64 +335,64 @@ $2.tran = k => v => ctx => ctx.layer.trans[ k ] = v;
 
 // 5. LAYERS
 
+$$.layer = {};
 
-class LayerOneOf{
-  constructor( ground ){
+class Layer_ {
+  constructor( ){
     this.env = {};
     this.exits = [];
-    this.trans = {};
-    this.xlays = [];         // embodiments
-    this.lower = ground;
-    ground.upper = this;
+/*     this.lower = ground;
+    ground.upper = this; */
   }
-
-  // disembody all layers above this ground
-  doDisembody(){
-    if( this.upper ){
-      this.upper.doDisembody();                 // disembody upper layers first
-      this.upper.exits.reverse().forEach( Case  // disembody this layer, last-first
-        ( isFunction , fn => fn()
-        , isNode     , nd => nd.parentNode.removeChild( nd ) ) );
-      this.upper.exits = [];                    // remove the exits preparing for next embodiment
-      delete this.upper;                        // delete ref to upper layer
-    }
-
-  }
-
-  // doEmbody
-  doEmbody( x, ...xs ){
-    // välj vad som ska embodimenteras
-    // xlayer defs are assumed to be lexically scoped
-    // make a new layer to be used by
-    const layer = new $$.layer.one( this );
-    this.upper = layer;
-    this.xlays.map( ({ node, xlay }) => Case
-      ( isFunction      , fn  => $2fn( fn( x, ...xs  ) )({ node, layer, values: [] })
-      , isObjectLiteral , obj => $2fn( obj[ x ] )({ node, layer, values: xs })
-      )( xlay ) )
-  }
-  // getState( <arr result> ) -- pushes the state value to the given array
-  getState( arr=[] ){
-    if( Object.hasOwn( this, 'val' ) ){ // a layer with no val is a top layer
-      arr.push( this.val );
-      this.upper.getState( arr );
-    }
-    return arr;
-  }
-
   // used by $2.the( <str key> )
   lookup( k ){
     return Object.hasOwn( this.env, k )? this.env[ k ]: this.lower.lookup( k );
   }
 }
 
-$$.layer = {};
-$$.layer.zero = LayerOneOf;
-$$.layer.one_of = LayerOneOf;
-$$.layer.pattern = LayerOneOf;
+$$.layer.zero = class extends Layer_ {
+  constructor( ){
+    super( );
+  }
+  getState( arr=[ ] ){ return arr; }
+  doDisembody( ){ }
+  doEmbody( ){ }
+}
+
+$$.layer.one_of = class extends Layer_ {
+  constructor( ){
+    super( );
+    this.trans = { };
+    this.xlays = [ ];         // embodiments
+  }
+  getState( arr=[ ] ){
+    arr.push( ...this.val ); // should be `arr.push( ...this.val )` ?
+    this.upper.getState( arr );
+    return arr;
+  }
+  doDisembody(){ // disembody all layers above this ground
+    this.upper.doDisembody();                 // disembody upper layers first
+    this.upper.exits.reverse().forEach( Case  // disembody this layer, last-first
+      ( isFunction , fn => fn()
+      , isNode     , nd => nd.parentNode.removeChild( nd ) ) );
+      this.upper.exits = [];                    // remove the exits preparing for next embodiment
+      delete this.upper;                        // delete ref to upper layer
+  }
+  doEmbody( ctx ){ // embody all layers above this ground
+    console.log( ctx.values, ctx.layer )
+    const [ x, ...xs ] = ctx.values;
+    return this.xlays.map( ({ node, xlay }) => Case
+      ( isFunction      , fn  => itag2fn( fn( x, ...xs ) )( project( { node, values: [] }, ctx ) )
+      , isObjectLiteral , obj => itag2fn( obj[ x ] )( project( { node, values: xs }, ctx ) )
+      )( xlay ));
+  }
+}
 
 
-const mk_layer = ( ground ) => new $$.layer.one( ground );
+$$.layer.pattern = $$.layer.one_of;
+
+
+const mk_layer = ( ground ) => new $$.layer.one_of( ground );
 
 // maybe_eval( <fn> | <value> )
 const maybe_eval = x => isFunction( x )? x(): x;
@@ -402,33 +402,6 @@ const as_fn = Case
   , isFunction        , fn  => fn
   )
 ;
-
-const EmbodyValues = ( ctx ) => {
-  console.log('EmbodyValues',ctx)
-  const ground = ctx.layer;
-  let [ v, ...vs ] = ctx.values;
-  v = v !== undefined? v : maybe_eval( ground.trans.INIT ); // default value
-  ground.val = v; // här borde märkas ifall @val unifierats
-
-  if( Object.hasOwn( ground, 'inp' ) ) ground.inp( v );
-  const ctx_ = project( { values: vs }, ctx );
-  const lays = ground.xlays.map( xlay => as_fn( xlay )( v ) );
-  for( let block of ground.lookup( '_block_' ) ) lays.push([ $1.class, `${ block }--${ ctx.values.join( '--' ) }` ]);
-  EmbodyLayers( ...lays )( ctx_ );
-};
-
-const EmbodyLayers = ( ...lays ) => ( ctx ) => {
-  // console.log('EmbodyLayers',ctx)
-  const ground = ctx.layer;
-  const upper = mk_layer( ground );
-  const ctx_ = project({ layer: upper }, ctx ); // project new layer
-  for( let lay of lays ) $2fn( lay )( ctx_ );
-  
-  if(  ctx_.values.length >= 1 || upper.trans[ 'INIT' ] !== undefined  ){
-    EmbodyValues( ctx_ );
-  }
-  return upper;
-};
 
 
 // SYNTAX
@@ -459,12 +432,12 @@ const normal_form = ( itg, ...args ) => {
 // $2.layer = ( <str key-arity>, <str+ keys> ) 
 $2.layer = ( key_arity, ...args ) => ( ...itags ) => ctx => {
   console.log( '$2.layer: ', key_arity, ...args   );
-/*   const ground = new $$.layer[ key_arity ]( ...args ); // make new layer
+  const ground = new $$.layer[ key_arity ]( ...args ); // make new layer
   ctx.layer.upper = ground;                            // double-link new layer with parent layer
   ground.lower = ctx.layer;
   const ctx_ = project( { layer: ground }, ctx );      // project new layer into context
-  for( let itag of itags ) $2fn( itag )( ctx );        // evaluate all child itags in the projected context */
-  for( let itag of itags ) $2fn( itag )( ctx ); 
+  for( let itag of itags ) itag2fn( itag )( ctx_ );       // create the layer itself 
+  ground.doEmbody( ctx_ );                               // embody the upper layers
 };
 
 
@@ -480,7 +453,7 @@ itag_head2fn = Match
   , /^--$/            , ( )           => $2.layer( 'zero' )
   , /^--top$/        , ( )            => $2.layer( 'zero' )
   , /^--zero$/        , ( )           => $2.layer( 'zero' )
-  , /^--([a-z]+) of/  , ( aka, rest ) => $2.layer( aka, ...trimsplit( /\s+/, rest ) )
+  , /^--([a-z]+) of/  , ( aka, rest ) => $2.layer( `${aka}_of`, ...trimsplit( /\s+/, rest ) )
   , /^--<([^>]*)>/    , ( type, types )  => $2.layer( 'pattern', type, ...match_types( types ) )
 
 
@@ -501,7 +474,7 @@ itag_head2fn = Match
   )
 ;
 
-const $2fn = Case
+const itag2fn = Case
   ( isFunction , fn => fn
   , isArray    , ([ head, ...args ]) => itag_head2fn( head )( ...args ) // let head decide syntax of tags
   , isString   , str => $1.textnode( str )

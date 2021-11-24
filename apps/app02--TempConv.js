@@ -1,10 +1,10 @@
 const convLay = ( from, to, conv ) => 
   [ '--<str>'
-  , [ itag2.the( from ), [ itag0.select ], [ 'state input', e => [ e.target.value ] ] ] 
+  , [ $2.the( from ), [ $0.select ], [ 'state input', e => [ e.target.value ] ] ] 
   , [ '^convert', Match
-      ( ''         , ()  => [ itag2.the( from ), [ itag1.class, 'empty' ], [ itag2.the( to ), itag2.attr( 'value' )( "" ) ] ]
-      , _parseFloat, num => [ itag2.the( to ), itag2.attr( 'value' )( conv( num ).toFixed( 2 ) ) ]
-                   , ()  => [ itag2.the(from ), [ itag1.class, 'invalid' ] ]  
+      ( ''         , ()  => [ $2.the( from ), [ $1.class, 'empty' ], [ $2.the( to ), $2.attr( 'value' )( "" ) ] ]
+      , _parseFloat, num => [ $2.the( to ), $2.attr( 'value' )( conv( num ).toFixed( 2 ) ) ]
+                   , ()  => [ $2.the(from ), [ $1.class, 'invalid' ] ]  
       ) ] ];
 
 const TempConv = 
@@ -36,7 +36,7 @@ const TempConv =
 ;
 
 /* 
-itag2.attr, alt monotonic description, men funkar ej
-if( ctx.node.hasAttribute( k ) ) console.error( `Non-monotonic add of itag2.attr( '${ k }', '${ v }' )` );
+$2.attr, alt monotonic description, men funkar ej
+if( ctx.node.hasAttribute( k ) ) console.error( `Non-monotonic add of $2.attr( '${ k }', '${ v }' )` );
 ctx.node.setAttribute( k, v );
 ctx.layer.exits.push( () => { ctx.node.removeAttribute( k ); }); */
