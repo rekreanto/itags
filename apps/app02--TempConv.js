@@ -2,9 +2,9 @@ const convLay = ( from, to, conv ) =>
   [ '--<str>'
   , [ $2.the( from ), [ $0.select ], [ 'state input', e => [ e.target.value ] ] ] 
   , [ '^convert', Match
-      ( ''         , ()  => [ $2.the( from ), [ $1.class, 'empty' ], [ $2.the( to ), $2.attr( 'value' )( "" ) ] ]
+      ( ''         , ()  => [ $2.the( from ), [ $$1.class, 'empty' ], [ $2.the( to ), $2.attr( 'value' )( "" ) ] ]
       , _parseFloat, num => [ $2.the( to ), $2.attr( 'value' )( conv( num ).toFixed( 2 ) ) ]
-                   , ()  => [ $2.the(from ), [ $1.class, 'invalid' ] ]  
+                   , ()  => [ $2.the(from ), [ $$1.class, 'invalid' ] ]  
       ) ] ];
 
 const TempConv = 

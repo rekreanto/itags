@@ -1,41 +1,22 @@
 
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Itags dev</title>
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Itags dev</title>
 
-  <link href= "itags--style.css" rel="stylesheet">
+    <link href= "itags--style.css" rel="stylesheet">
+    <script src="itags.js"></script>
 
-  <script src="itags.js"></script>
-  <!-- <script src="page.js"></script> -->
-  <link href= "apps/app01--BasicCounter.css" rel="stylesheet">
-  <script src="apps/app01--BasicCounter.js"></script>
-  
-  <link href= "apps/app02--TempConv.css" rel="stylesheet">
-  <script src="apps/app02--TempConv.js"></script>
-</head>
-<body> 
-  <script>
-    let lay;
-
-    // page = { app: TempConv      , values: [ 'f', '451' ] };
-    page = { app: BasicCounter , values:  [ 0 ] };
-
-    const Observe = () => {
-      //console.log( "= ", ...lay.upper.getState() )
-    };
-    window.addEventListener( 'DOMContentLoaded', () => {
-      const t0 = performance.now();
-      lay = {};
-      // EmbodyLayers( page.app )({ node: document.body, layer: lay, values: page.values });
-      itag2fn( page.app )( { node: document.body, layer: lay, values: page.values }  )
-      const t1 = performance.now();
-      console.log((t1-t0).toFixed(2),"ms")
-
-    });
-
-</script>
-</body>
+    <link href= "pages/page01--pages.css" rel="stylesheet">
+    <script src="pages/page01--pages.js"></script>
+    
+    <link href= "apps/app01--BasicCounter.css" rel="stylesheet">
+    <script src="apps/app01--BasicCounter.js"></script>
+    
+    <link href= "apps/app02--TempConv.css" rel="stylesheet">
+    <script src="apps/app02--TempConv.js"></script>
+  </head>
+  <body></body>
 </html>
