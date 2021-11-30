@@ -6,9 +6,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Itags dev</title>
 
-    <link href= "itags--style.css" rel="stylesheet">
-    <script src="itags.js"></script>
+    <link href= "style--general.css" rel="stylesheet">
 
+    <link href= "style--numbering.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/@highlightjs/cdn-assets@11.3.1/styles/vs.min.css">
+    <script src="lib/highlight.min.js"></script>
+<!-- 
     <link href= "pages/page01--pages.css" rel="stylesheet">
     <script src="pages/page01--pages.js"></script>
     
@@ -16,7 +20,130 @@
     <script src="apps/app01--BasicCounter.js"></script>
     
     <link href= "apps/app02--TempConv.css" rel="stylesheet">
-    <script src="apps/app02--TempConv.js"></script>
+    <script src="apps/app02--TempConv.js"></script> -->
+    <style>
+
+    </style>
   </head>
-  <body></body>
+  <body>
+
+<article class="LitProgEssay">
+
+<script class='listing-here'>
+  // test
+  const answer = 42;
+</script>
+
+<h1 class="nocount">Itags – a Universal ZOC HTML LMML embedded in JavaScript</h1>
+    <p class="intro">It is suboptimal from a langauge usability point-of-view if the langauge user/programmer:
+      <ol>
+        <li>Has to shift frequentlys between representations/languageages when working on an artefact</li>
+        <li>Is punished with incidencial complexity for composing an artefact out of parts</li>
+        <li>Must use expresseions whose consequences must kept in mind and addressed in a far-away place</li>
+        <li>Has no clear way to get a birds-eye view of an application</li>
+        <li>etc. etc.</li>
+      </ol>
+    </p>
+    <p>Itags addresses all those concerns and does so at the appropriate abstraction level, before the problems already has escaped and caused havoc in the souce code and permanent damage to the language usage experience.</p>
+
+    <p>The key to the Itags solution is the following points
+    </p>
+<ul>
+  <li>Orthogonality at the core (1)</li>
+  <li>Data as a universal interface (2)</li>
+  <li>Ephemeral language constructs that knows when to die (3)</li>
+  <li>Uses an explicit state formalism; Layer Machines (4)</li>
+</ul>
+<h2>Prelude</h2>
+<h3>Support gradual defintion of functions</h3>
+<p>Support using an array as a function call. Use-case: We want to allow the definition of a structurally defined</p>
+<script class="list-here">
+  /**
+   *  Sample usage 
+   * [ Match
+   * , /pat1/ , fn1
+   * , /par2/ , fn2
+   * ].as_fn
+   */
+  $$ = {};
+  $$.type = {};
+  $$.type.fn = ( [ f, ...xs ] ) => f( ...xs );
+  $$.type.itaghead = {};
+  $$.type.itag = {};
+  
+  const o = Array.prototype.eval = 
+    function( evl ){
+      return evl( this );    
+    }
+  ;
+
+  // demo
+  console.assert( [ x => x*2, 3 ].eval( $$.type.fn ) === 6 );
+
+</script>
+
+
+<h2>Namespaces</h2>
+<script class= "code-listing">
+
+  const $$1 = {};
+  const $$2 = {};
+</script>
+
+<h2>Syntax</h2>
+<script class= "code-listing">
+  $$.syntax = {};
+  // $$.syntax.tag  = [ Match ]; // add tag syntax rules here
+  // $$.syntax.head = [ Match ]; // add head rules here
+</script>
+
+
+    <h2>Context</h2>
+    
+    
+    
+    
+    <h2>Ground Actions</h2>
+    
+    
+    
+    
+    <h2>Tags</h2>
+      <h3>Tag Classification</h3>
+    
+    
+    
+    
+      <h2>Layers</h2>
+    <h3>Layer Classification</h3>
+<div class="appendix">
+<h1>Appendix</h1>
+
+      <h2>Layers</h2>
+      <h2>Layers</h2>
+</div>
+  </article>
+
+
+  
+
+
+<script>
+  document.addEventListener('DOMContentLoaded', (event) => {
+    hljs.configure({ ignoreUnescapedHTML: true });
+    // find all <script> tags
+    document.querySelectorAll('script.listing-here').forEach((el) => {
+      const listing = document.createElement( 'pre' );
+      const code = document.createElement( 'code' );
+      listing.appendChild( code );
+      const txt = el.textContent;
+      // normalize trailing whitespace
+      code.textContent = `${ txt.trimEnd() }\n\n`; 
+      code.classList.add('language-js');
+      el.parentNode.insertBefore(listing, el);
+      hljs.highlightElement( listing );
+    });
+  });
+</script>
+  </body>
 </html>

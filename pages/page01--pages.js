@@ -27,7 +27,7 @@ const _ = undefined;
 
 
 
-[ '.Itags'
+[ 'def Itags'
 , [ '<div>'
   , [ '<h1> main-title', "Itags" ] 
   , [ '<i> subtitle', "An implementation of uH abstract syntax and LM semantics" ]
@@ -37,9 +37,9 @@ const _ = undefined;
     , sentences: 10
     })
   ]
-].def(); 
+].read(); 
 
-[ '.UniHTML Page'
+[ 'def UniHTML'
 , [ '<h1> title', "Universal HTML" ] 
 , [ '<i> subtitle', "HTML, but with tags added for reactivity and state managment" ]
 , [ '<p>', $$.random.lorem(
@@ -47,10 +47,10 @@ const _ = undefined;
     , sentences: 16 
     })
   ]
-].def(); 
+].read(); 
 
 
-[ '.LayerMachine Page'
+[ 'def LayerMachine Page'
 , [ '<h1> title', "Layer Machines" ] 
 , [ '<i> subtitle', "Statecharts generalized to be amenable to language level integration" ]
 , [ '<p>', $$.random.lorem(
@@ -58,7 +58,7 @@ const _ = undefined;
     , sentences: 8 
     })
   ]
-].def(); 
+].read(); 
 
 [ '.Demos Page'
 , [ '<h1> title', "Layer Machines" ] 
@@ -68,11 +68,11 @@ const _ = undefined;
     , sentences: 24 
     })
   ]
-].def(); 
+].read(); 
 
 // Itags Landing Page
 
-[ 'block LandingPage'
+[ 'def LandingPage'
 , [ '::one of itags uh lm demos' ]
 , [ '<nav>'
   , [ '=click', ev => ev.target.value ]
@@ -87,8 +87,8 @@ const _ = undefined;
   , [ '/lm'   , $.LayerMachine ]
   , [ '/demos', $.Demos        ]
   ] 
-].def().main( 'itags' );
+].read();
 
-[ 'block YeahYeah'
+[ 'def YeahYeah'
 , [ '<h1>', "Yeah, uh, uuh..." ]  
 ];
