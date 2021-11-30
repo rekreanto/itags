@@ -1,2 +1,2 @@
 # itags
- a proof-of-concept implementation of ihtml in js
+An implementation of Layer Machine Markup Language for js/html as an embedded DSL in JavaScript. ( itags =  lmml(js,html) )
