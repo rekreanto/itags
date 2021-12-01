@@ -57,13 +57,13 @@
 </script>  
 <h3>Normalizing to a Context</h3>
 
-<p>If a node is given where a context is expected, it can be normalized into a context by calling the <code>Context</code> constructor with the node as its single argument.</p>
+<p>If a node is given where a context is expected, it can be normalized into a context by calling the <code>Context</code> constructor with the node as its single argument. The need for this only appears at the top level and if itags is used for rendering a  non-itags DOM.</p>
 <script class="listing-here">
   // Context( <node n> } ) 
   // ~> Context( { node: n } ) 
 </script>
 <h3>Projecting a Context</h3> 
-<p>The Context has <em>value semantics</em> by convention. The only way to change it legally is call the Context constructor with two arguments, the change and the original context. A new context with the required change is returned.</p>  
+<p>The Context has <em>value semantics</em> by convention, so modifying a context is forbidden. The way to make a new context based on an old is to "project" it, by e.g. calling the Context constructor with two arguments; the change and the original context. A new context with the required change is returned.</p>  
 <script class="listing-here">
   const Context = CaseArity
     ( 1, Normalize( isNode, node => ({ node }) )
