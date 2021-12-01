@@ -1,26 +1,25 @@
-.BasicCounter {
-  background-color: black;
-  color: hsla( 0, 0%, 100%, 66%);
-  text-align: center;
-  font-family: monospace;
-}
+  .BasicCounter {
+    background-color: black;
+    color: hsla( 0, 0%, 100%, 66%);
+    text-align: center;
+    font-family: monospace;
+  }
 
-.BasicCounter__title {
-  background-color: hsla(0,0%,100%, 6.6%);
-  color: hsla( 0, 0%, 100%, 66%);
-}
+  .BasicCounter__title {
+    background-color: hsla(0,0%,100%, 6.6%);
+    color: hsla( 0, 0%, 100%, 66%);
+  }
 
-.BasicCounter__display {
-  font-weight: bold;
-  font-size: 8rem;
-  padding: 2rem;
-  font-family: 'Courier New', Courier, monospace;
-/*   color: white; */
-}
+  .BasicCounter__display {
+    font-weight: bold;
+    font-size: 8rem;
+    padding: 2rem;
+    font-family: 'Courier New', Courier, monospace;
+  }
 
-.BasicCounter__display.negative  { color: red;   }
-.BasicCounter__display.zero      { color: orange; }
-.BasicCounter__display.positive  { color: green; }
+  .BasicCounter__display.negative  { color: red;   }
+  .BasicCounter__display.zero      { color: orange; }
+  .BasicCounter__display.positive  { color: green; }
 
 .BasicCounter__buttons {
   background-color: hsla(0,0%,100%, 6.6%);
