@@ -8,13 +8,21 @@ body {
    line-height: 1.6rem;
  }
 
-pre, code {
+code {
+  padding: 0.2rem;
+  margin: 0.2rem;
+  background-color: hsl( 40, 80%, 95% ) !important;
+  border-top: solid 1px hsl( 40, 80%, 80% );
+  border-bottom: solid 1px hsl( 40, 80%, 80% );
+}
+
+pre, pre code {
   line-height: 1.16rem;
   margin: 0 !important;
   padding: 0 !important;
   background-color: hsl( 40, 80%, 95% ) !important;
-  border: 1px 0 1px 0;
-  border-color;
+  border-top: solid 1px hsl( 40, 80%, 80% );
+  border-bottom: solid 1px hsl( 40, 80%, 80% );
 }
 
 h1, h2, h3 {
