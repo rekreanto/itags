@@ -1,21 +1,34 @@
 
-h1 { counter-reset: h2; }
-h2 { counter-reset: h3; }
-article {
-  max-width: 600px; 
-  margin: 0 auto;
-}
-article h2:before { opacity: 0.40; }
-article h3:before { opacity: 0.50; }
-article h2:before {
-  content :  counter( h2, decimal ) ".\0000a0\0000a0";
-  counter-increment : h2;
+article { counter-reset: chapter attr('data-ch') }
+
+h1 { counter-reset: h2 }
+h2 { counter-reset: h3 }
+
+
+h1:before {
+  counter-increment: chapter;
+  content : "Chapter " attr(data-ch) ". ";
+  display: block;
+  opacity: 0.5;
 }
 
-article h3:before {
-  content :  counter(h2,decimal) "." counter(h3,decimal) "\0000a0\0000a0";
+h2:before { 
+  counter-increment: h2;
+  content :  counter( h2, decimal ) ". "; }
+
+h3:before {
   counter-increment : h3;
-}
+  content : 
+    counter( h2, decimal ) "."
+    counter( h3, decimal ) " ";
+  }
+
+
+article h2:before { opacity: 0.40; }
+article h3:before { opacity: 0.50; }
+
+
+
 
 h2.nocount:before, h3.nocount:before {
   content : "";
@@ -27,25 +40,3 @@ h2.nocount:before, h3.nocount:before {
 
 
 
-.appendix h1 { counter-reset: h2; }
-h2 { counter-reset: h3; }
-.appendix article {
-  max-width: 600px; 
-  margin: 0 auto;
-}
-.appendix  h2:before { opacity: 0.40; }
-.appendix  h3:before { opacity: 0.50; }
-.appendix  h2:before {
-  content : counter( h2, decimal ) ".\0000a0\0000a0";
-  counter-increment : h2;
-}
-
-.appendix  h3:before {
-  content : counter(h2,decimal) "." counter(h3,decimal) "\0000a0\0000a0";
-  counter-increment : h3;
-}
-
-.appendix h2.nocount:before, h3.nocount:before {
-  content : "";
-  counter-increment : none;
-}

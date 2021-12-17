@@ -1,0 +1,448 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ch1 -- Itags dev</title>
+
+    <link href= "style--general.css" rel="stylesheet">
+
+    <link href= "style--numbering.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/@highlightjs/cdn-assets@11.3.1/styles/vs.min.css">
+    <script src="lib/highlight.min.js"></script>
+    <script src="itags--prelude.js"></script>
+    <script src="ch0.js"></script>
+  </head>
+  <body>
+
+
+
+
+<article class="LitProgEssay">
+<header class="LitProgEssay__titlebar" id="docnav"></header>
+<section id='basic-metatags'>
+<h1   data-ch='1'>Metatags</h1>
+<p class="intro">It would be great fun to  do some Hiccup-style HTML rendering of basic HTML. </p>
+  <p>
+    <ol>
+      <li>Render those tags, thus supporting:
+        <ul>
+          <li>text nodes</li>
+          <li>tag</li>
+          <li>attr</li>
+          <li>class</li>
+          <li>style</li>
+          <li>queries</li>
+        </ul>
+      </li>
+    </ol>
+  </p>
+
+
+
+
+<h2>Name spaces</h2>
+
+<script class="listing-here-new">
+  const $  = {}; // namespace for utility functionality
+  const $$ = {}; // namespace for metatags (valence 2)
+</script>
+
+
+
+<h2>Metatags for existing html constructs</h2>
+<p>A HTML tag is things such as <code>div</code> or <code>li</code>. The angle brackets surrounding the ordinary tags can be seen as a metatag. And there could conceivably be more metatags than angle brackets. Metatags is the way Itags extends traditional html into a markup langauge that is as powerful as a full programming langauge.</p>
+<h3>Namespace for metatags</h3>
+<script class="listing-here-new">
+  $$.entry = {};
+</script>
+
+<h3>Text nodes</h3>
+<script class="listing-here-new">
+  $$.entry.textnode = 
+    ( ...strs ) =>
+    ( node ) =>
+  { // ENTRY
+    const el = document.createTextNode( strs.join( '' ) );
+    node.appendChild( el );
+  };
+</script>
+
+<h3>The HTML tag metatag a.k.a <i>angle brackets</i></h3>
+<script class="listing-here-new">
+  $$.entry.tag = 
+    ( tagname )   =>
+    ( ...itags ) => // literal itags
+    ( node )       => 
+  { // ENTRY
+    const node_ = document.createElement( tagname );
+    node.appendChild( node_ );
+    for( let itag of itags )
+      itag( node_ );
+  };
+</script>
+
+<h3>The HTML attr metatag</h3>
+
+<script class="listing-here-new">
+  $$.entry.attr = 
+    ( k )   => 
+    ( v )   =>
+    ( node ) => 
+  { // ENTRY
+    node[ k ] = val;
+  };
+
+</script>
+
+<h3>The HTML style metatag</h3>
+<script class="listing-here-new">
+  $$.entry.style =
+    ( k )   =>
+    ( v )   =>
+    ( node ) => 
+  { // ENTRY
+    node.style[ k ] = v;
+  };
+</script>
+
+<h3>The HTML class metatag</h3>
+<script class="listing-here-new">
+  $$.entry.class = 
+    ( cl )  => 
+    (  )    => 
+    ( node ) => 
+  { ENTRY
+    node.classList.add( cl );
+  };
+</script>
+
+<h3>A query metatag</h3>
+<p><code>[ query( &lt;str query&gt;), &lt;itag+ itags&gt; ]</code> Given a <code>query</code>, embody <code>itags</code> with each node as context</p>
+<script class="listing-here-new">
+  $$.entry.query = 
+    ( query )    => 
+    ( ...itags ) => 
+    ( node )     => 
+  { // ENTRY
+    const nodes = node.querySelectorAll( query );
+    for(  let node_ of nodes )
+      for( let itag of itags )
+        itag( node_ );
+  };
+</script>
+
+<h2>Demo: Using metatags without syntax</h2>
+<h3>Some HTML to render</h3>
+  <pre><code class='lang-html'>
+    &lt;h1&gt;'Hello [h1]!&lt;/h1&gt;
+    &lt;p&gt;Hello &lt;p&gt;! Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.&lt;/p&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Hello [li] one&lt;/li&gt;
+      &lt;li&gt;Hello [li] two&lt;/li&gt;
+      &lt;li&gt;Hello [li] three&lt;/li&gt;
+    &lt;/ul&gt;
+  </code></pre>
+
+<p class="intro">Demo area: <code>#demo1</code></p>
+<p id="demo1" class="demo"></p>
+<p>Raw metatags to render into the demo area: </p>
+<script class="listing-here-new">
+  $$.entry.query( '#demo1' )
+    ( $$.entry.tag( 'h1' )
+        ( $$.entry.textnode( 'Hi there <h1>!' )
+        )
+    , $$.entry.tag( 'p' )( 
+        $$.entry.textnode( 'Yay <p>! Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.' )  
+      )
+    , $$.entry.tag( 'ul' )
+      ( $$.entry.tag( 'li' )
+        ( $$.entry.textnode( 'Hello <li> one' )
+        )
+      ,  $$.entry.tag( 'li' )
+        ( $$.entry.textnode( 'Hello <li> two' )
+        )
+      , $$.entry.tag( 'li' )
+        ( $$.entry.textnode( 'Hello <li> three' )
+        )
+      )
+    )( document.body )
+  ;
+</script>
+
+<p>This works, but is pretty terrible from both a readibility and writeablility point of view; it is easy to get lost among the uniformity, to miss a bracket etc. How does it look if we just swap the long namespaced names for shorter ones?</p>
+
+<pre><code class="language-js">
+  query( '#demo1' )
+    ( h1 ( 'Hi there [h1]!' )
+    , p
+      ( 'Yay [p]! Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.' 
+      )
+    , ul
+      ( li ( 'Hello [li] one' )
+      , li ( 'Hello [li] two' )
+      , li ( 'Hello [li] two' )
+      )
+    )( document.body )
+  ;  
+</code></pre>
+<p>That is better; the ratio of line-noise vs content is reduced. The `textnode` calls can easily be eliminated, so they are not shown in the sample markup. But we lost something that is more important. We are expressing ourselves at the level of html tags. We can no more express metatags in a way that is consistent with our expression of the HTML tags. The next chapter is about syntax. We explore the possibility to keep the nice brevity and a shape that mimics that of HTML markup that we have here, but that also allows us to extend the HTML markup with additional tags for state and embodiments; we are in need of a syntax that can express layers in a way that is still readable, writeable, and &mdash; as much as possible &mdash; glanceable!</p>
+
+
+
+<!--
+<section id="array-syntax">
+  <h1 class="nocount">Itag syntax</h1>
+  <p>Itags are represented as arrays or strings, but needs to be perceived as functions.</p>
+  <script class="listing-here-new">
+    // namespace
+    $.syntax.itag = Match
+      ( _Function , fn => fn 
+      , _Array    , ([ head, ...args ]) => head( ...args )
+      , _String   , )
+    ; 
+  </script>  
+
+</section>
+
+<section id="metatag-syntax">
+  <h1 class="nocount">Metatag syntax</h1>
+</section>
+
+<section id="supporting-undo">
+  <h1 class="nocount">Supporting undo</h1>
+  <p class="intro">It would be great fun if the tags knew how to disembody themselves.</p>
+ 
+  <h2>Metatags with undo</h2>
+  <h3>The HTML tag metatag a.k.a <i>angle brackets</i></h3>
+<script class="listing-here-new">
+  $$.entry.htmltag = 
+    ( tagname )   =>
+    ( ...litags ) => // literal itags
+    ( ctx     )   => 
+      // entry
+    { const node = document.createElement( tagname )
+    ; const ctx_ = Context( { node, bact: false  }, ctx )
+    ; for( let litag of litags ) 
+        $.syntax.itag( litag )( ctx_ )
+    ; ctx.layer.exits.push( 
+        () => { node.parent.removeChild( node ) } 
+      )
+    } 
+</script>
+
+<h3>The HTML attr metatag</h3>
+
+<script class="listing-here-new">
+  $$.entry.htmlattr = ( k, v ) => ctx => {
+    // entry
+    ctx.node[ k ] = val;
+    // exit
+    ctx.exits.push(
+      () => { ctx.node.removeAttribute( k ); }
+    );
+  };
+
+</script>
+
+<h3>The HTML style metatag</h3>
+<script class="listing-here-new">
+  $$.entry.htmlstyle = k => v => ctx => {
+    if( ctx.node.style.getPropertyValue( k ) !== '' ) console.error( `Non-monotonic add of $1.style( '${ k }', '${ v }' )` );
+    ctx.node.style[ k ] = v;
+    ctx.layer.exits.push( () => { ctx.node.style.removeProperty( k ); } );
+  };
+</script>
+
+<h3>The HTML class metatag</h3>
+<script class="listing-here-new">
+  $$.entry.htmlclass = ( cl ) => (  ) => ( ctx ) => {
+    if( ctx.node.classList.contains( cl ) ) console.error( `Non-monotonic add of class '${ cl }'` );
+    ctx.node.classList.add( cl );
+    ctx.layer.exits.push(() => { ctx.node.classList.remove( cl ); });
+  };
+</script>
+
+
+</section>
+
+
+
+
+
+<section>
+<h1>Metatag syntax</h1>
+
+<h2>Name spaces for syntax</h2>
+<script class="listing-here-new">
+  $.syntax = {};
+  $.syntax.itag = [ Match ]; // Replace with function at init
+  $.syntax.head = [ Match ]; // Replace with function at init
+</script>
+
+<h2>Plain syntax</h2>
+<script class="listing-here-new">
+  $.syntax = {};
+  $.syntax.itag = [ Match ]; // Replace with function at init
+  $.syntax.head = [ Match ]; // Replace with function at init
+</script>
+
+<h2>Glancable syntax</h2>
+<script class="listing-here-new">
+
+</script>
+
+</section>
+
+<section>
+<h1></h1>
+<h2>Preparing iTag syntax</h2>
+<p></p>
+
+<h3>Syntax uncompiled matching functions</h3>
+The syntactic form of a amtching function call is just an array. Thus clauses can be added throughout the language definition. At the end, the syntactic form is trivially compiled into a applicable matching function.
+<script class="listing-here-new">    
+  $.syntax.itag = [ Match ];
+  $.syntax.head = [ Match ];
+  
+</script>
+
+<h3>Functions as itags</h3>
+<script class="listing-here-new">    
+  $.syntax.itag.push( isFunction , fn => fn );
+</script>
+<h3>Arrays interpreted as itags</h3>
+<script class="listing-here-new">
+  $.syntax.itag.push
+    ( isArray    
+    , ([ head, ...args ]) =>
+      $.syntax.head.call( head )( ...args )
+    )
+  ;
+</script>
+<h3>Strings and numbers interpreted as itags</h3>
+<script class="listing-here-new">
+  $.syntax.itag.push
+    ( isString   , str => $$.textnode( str )
+    , isNumber   , n   => $$.textnode( n.toString() )
+    )
+  ;
+</script>
+
+
+
+
+<h2>Compiling syntactic function definitions</h2>
+<script class="listing-here-new">
+  Compile( $.syntax, 'itag' );
+  Compile( $.syntax, 'head' );
+</script>
+
+<h3>Listings of the complete syntax definitions</h3>
+<p></p>
+
+<h2>Context</h2>
+<p>Every itag exists as syntax that can be interpreted as a JavaScript function that takes a context. The context is what gives an itag its power; it is as powerful as what can be done with a context. In Itags level A, the context contains the current node and nothing else.</p>
+<script class="listing-here-new">
+  // Context( { node: <node current-node> } )
+</script>  
+<h3>Normalizing a node to a Context</h3>
+
+<p>If a node is given where a context is expected, it can be normalized into a context by calling the <code>Context</code> constructor with the node as its single argument. The need for this only appears at the top level and if itags is used for rendering a  non-itags DOM.</p>
+<script class="listing-here-new">
+  // Context( <node n> } ) 
+  // ~> Context( { node: n } ) 
+</script>
+<h3>Projecting a Context</h3> 
+<p>The Context has <em>value semantics</em> by convention, so modifying a context is forbidden. The way to make a new context based on an old is to "project" it, by e.g. calling the Context constructor with two arguments; then change and the original context. A new context with the required change is returned.</p>  
+<script class="listing-here-new">
+  const Context = CaseArity
+    ( 1, PerceiveAs
+      ( isNode, node => (
+        { node, bact: true
+        , layer: { exits: [] } 
+        } ) )
+    , 2, ( a, b ) => Object.assign( {}, b, a )
+    )
+  ;
+</script>
+</section>
+
+
+-->
+
+</article>
+
+
+
+  </body>
+</html>
+
+<!-- junk
+
+<li>Some jquery utilties &mdash; just so there is something to play with &mdash; such as:
+  <ul>
+    <li>Querying with a unique query: <br>
+      <code>[ 'queryThe &lt;str query&gt;', &lt;itag+&gt; ]</code></li>
+    <li>Querying with an ambigous query: <br>
+      <code>[ 'queryAll  &lt;str query&gt;', &lt;itag+&gt; ]</code></li>
+    
+    <li>Wrapping an existing node:<br>
+      <code>[ 'wrap', &lt;node&rarr;itag&gt; ]</code></li>
+  </ul>
+
+
+
+
+</li> -->
+
+
+
+<!-- junk
+
+  <h2>js Method for Rendering iTags</h2>
+<p>This is a convenience monkey-patched method for executing an itag in syntactic form ( an array, string, number in itags level A ) e.g. on a traditionally defined DOM.</p>
+<script class="listing-here-new">
+  $.render_itag = 
+    function( x ){ 
+      return Case
+        ( isNode, mctx => {
+            const ctx = Context( mctx ); // normalize
+            $.syntax.itag( this )( ctx );
+            return ctx.layer;
+          }
+        , isString, query => {
+            const nodes = document.querySelectorAll( query );
+            const ctx = { layer: { exits: [] } };
+            const itag = $.syntax.itag( this );
+            for( node in nodes ) itag( Context( { node }, ctx ) );
+            return ctx.layer;
+          }
+        )( x )
+    }
+  ;
+  Function .prototype.itag = $.render_itag;
+  Number   .prototype.itag = $.render_itag;
+  String   .prototype.itag = $.render_itag;
+  Array    .prototype.itag = $.render_itag;
+</script>
+ -->
+
+<!-- junk
+
+<h2>Compiling syntactic forms</h2>
+<p>Comile replaces the syntactic form of a function such as <code>Match</code> with the compiled function. The source is preserved as the property <code>@source</code> of the comiled function</p>
+<script class="listing-here-new">
+  // Compile( <namespace ns>, <str key> )
+  const Compile = ( ns, key ) => {
+    const source = ns[ key ];
+    const [ head, ...args ] = source;
+    const fn = head( ...args );
+    fn.source = source; 
+    delete ns.key;
+    ns[ key ] = fn;
+  }
+
+</script> -->

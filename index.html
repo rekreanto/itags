@@ -29,7 +29,7 @@
 
 <article class="LitProgEssay">
 
-<script class='listing-here'>
+<script class='listing-here-new'>
   // test
   const answer = 42;
 </script>
@@ -132,7 +132,7 @@
   document.addEventListener('DOMContentLoaded', (event) => {
     hljs.configure({ ignoreUnescapedHTML: true });
     // find all <script> tags
-    document.querySelectorAll('script.listing-here').forEach((el) => {
+    document.querySelectorAll('script.listing-here-new').forEach((el) => {
       const listing = document.createElement( 'pre' );
       const code = document.createElement( 'code' );
       listing.appendChild( code );

@@ -1,0 +1,320 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ch3</title>
+
+    <link href= "style--general.css" rel="stylesheet">
+
+    <link href= "style--numbering.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/@highlightjs/cdn-assets@11.3.1/styles/vs.min.css">
+    <script src="lib/highlight.min.js"></script>
+    <script src="itags--prelude.js"></script>
+    <script src="ch0.js"></script>
+  </head>
+  <body>
+
+
+
+
+<article class="LitProgEssay">
+<header class="LitProgEssay__titlebar" id="docnav"></header>
+<section>
+<h1 data-ch='3'>Context</h1>
+<h2>Intro</h2>
+<h3>Chapter use-case</h2>
+  <p class="intro">It would be fun to be able to type an itag and see it rendered and then edit and re-render it. So ,enned to support Undo, in other words, need ephemerality.</p>
+<h3>Feature break-down</h2>
+<p>What do we need in order to render and re-render an itag?</p>
+<ul>
+  <li><b>Undo:</b> Metatags that can store information on how to disembody themselves.</li>
+  <li><b>Context:</b> We need to empower the tags &mdash; In stead of a tag having access to just a node to act on, we something that can hold just about anything &mdash; we call that a <i>context</i>.</li>
+  <li><b>A simple sandbox:</b> A text-area that evals code using a dempo-area as node.</li>
+  <li></li>
+  <li></li>
+</ul>
+
+
+<script class="listing-here-hidden">
+  // == Namespaces for Syntax ==
+  const $  = {}; // namespace for utility functionality
+  const $$ = {}; // namespace for metatag related stuff
+  $$.bact = {}; // namespace for metatags
+
+  $.syntax = {}; // namespace for syntax-related stuff
+</script>
+
+<script class="listing-here-hidden">
+  // == Syntax definition ==
+  // === Head syntax ===
+  $.syntax.args = ( str ) => {
+    console.log( 'argstr: ', str );
+    const marr = str.match( /\S+/g ); // returns null if no match
+    return marr? marr: []; // consistent empty return
+  }
+  $.syntax.head = Match
+  // NO SYNTAX  
+    ( _Function , fn => fn
+  // PLAIN HEAD SYNTAX
+    , /^([a-z]+)/   , ( metatag, argstr ) => $$.bact[ metatag ]( $.syntax.args( argstr ) )
+  // GLANCEABLE HEAD SYNTAX
+    , /^<([^>]+)>$/ , ( argstr ) => $$.bact.tag( ...$.syntax.args( argstr ) )
+    , /^@/          , ( argstr ) => $$.bact.attr( ...$.syntax.args( argstr ) )
+    , /^\./         , ( argstr ) => $$.bact.class( ...$.syntax.args( argstr ) )
+    , /^~/          , ( argstr ) => $$.bact.style( ...$.syntax.args( argstr ) )
+    );
+    
+</script>
+
+
+<script class="listing-here-hidden">
+  // === Itag Syntax ===
+  $.syntax.itag = Match
+    ( _Function , fn => fn
+    , _Array    , ([ head, ...args ]) =>
+                    $.syntax.head( head )( ...args )
+    , _String   , str => $$.bact.textnode( str )
+    , _Number   , n => $$.bact.textnode( n.toString() )
+    )
+  ;
+</script>
+
+<script class="listing-here-hidden">
+  const stack = [];
+  const undo = () => {
+    if( stack.length === 0 ){
+      console.warn( "nothing more to undo" );
+      return;
+    }
+  // UNDO LAST on stack
+    for( let exit of stack.pop() ) exit();
+  };
+
+  // === Convenience method for itag syntax ===
+  const itag_method = function( ctx ){
+    $.syntax.itag( this )( ctx );
+    console.log( ctx.exits );
+    stack.push( ctx.exits  );
+  }
+  Function.prototype.itag = itag_method;
+  Array.prototype.itag = itag_method;
+  String.prototype.itag = itag_method;
+  Number.prototype.itag = itag_method;
+  
+</script>
+
+<h2>A Rich Context</h2>
+<h3>Rationale</h3>
+<p>It would be great if we in the future could empower the tags with new features targeted ad some tags without affecting all tags. Therefore wo implement the coantext as an open-ended map: every tag uses tha part it is interested in, and passes on the rest unchanged. FOr example, if we in the future would like to make the implementation more efficient and only disembody the tags that actually needs to b disembodied, we could add a key <code>Context( +@leeways: &lt;bool&gt; )</code>, and avoid adding a disembodiment action if <code>@leeways: true</code>. Or we could add themes by adding a key <code>Context( +@theme: &lt;theme&gt; )</code></p>
+<h3>Pun intended</h3>
+<p>Yeah, this is exactly the open-ended use of maps that Rich Hickey advocates, so yes; hell yes!, pun intended! BTW, I support the idea to call maps used in this way <code>Hickey Maps</code>.</p>
+
+<h3>Teh Context has Value semnatics</h3>
+<p>The context can be seen as a point in a coordinate system. Such points has value semantics, meaning that it it chages it is another value, thus me map object holding the cooordintes is to be disregarded as an object in its own right; it is just an implmentation detail. In order make it easy to uphold the value nature of Contexts, we define a constructor that can be used to creat a context or produce a new context as a projection of an old one.</p>
+<h3>The Context Constructor</h3>
+<script class="listing-here-new">
+  // Project a context
+  
+  // Context( <obj props>, <obj context> )
+  const Context = ( props, ctx ) => 
+    Object.assign( {}, ctx, props );
+</script>
+
+
+
+<h2>Metatags</h2>
+<p>We modify all the metatags so that they can store an exit action that knows enought to undo the embodimentthe tag entry action performed.</p>
+
+<h3>Text-nodes</h3>
+<script class="listing-here-new">
+  $$.bact.textnode = 
+    ( ...strs ) =>
+    ( ctx ) => {
+  // ENTRY
+    const el = document.createTextNode( strs.join( '' ) );
+    ctx.node.appendChild( el );
+  // EXIT
+  if( !ctx.leeways ) ctx.exits.push( () => { ctx.node.parentNode.removeChild( node ) } );
+
+  };
+</script>
+
+<h3>The HTML tag metatag</h3>
+<script class="listing-here-new">
+  $$.bact.tag = 
+    ( tagname )   =>
+    ( ...sitags ) => // syntactic itags
+    ( ctx )      => {
+      console.log('"',tagname)
+  // ENTRY
+    const node = document.createElement( tagname );
+    ctx.node.appendChild( node );
+  // DESCENDANTS
+    for( let sitag of sitags )
+      $.syntax.itag( sitag )( Context( { node, leeways: true }, ctx ) );
+  // EXIT
+    console.log('ctx.leeways ',ctx.leeways);
+    if( !ctx.leeways ) ctx.exits.push( () => { node.parentNode.removeChild( node ) } );
+ };
+</script>
+
+<h3>The HTML attr metatag</h3>
+
+<script class = "listing-here-old">
+  $$.bact.attr = 
+    ( k )   => 
+    ( v )   =>
+    ( ctx ) => {
+  // ENTRY
+    ctx.node.setAttribute( k, v );
+  // EXIT
+    if( !ctx.leeways ) ctx.exits.push( () => { ctx.node.removeAttribute( k ); } )
+  };
+
+</script>
+
+<h3>The HTML style metatag</h3>
+<script class="listing-here-old">
+  $$.bact.style =
+    ( k )    =>
+    ( v )    =>
+    ( ctx ) => {
+  // ENTRY
+    ctx.node.style[ k ] = v;
+  // EXIT
+  if( !ctx.leeways ) 
+    ctx.exits.push( 
+      () => { ctx.node.style.removeProperty( k ); } 
+    );
+  };
+</script>
+
+<h3>The HTML class metatag</h3>
+<script class="listing-here-old">
+  $$.bact.class = 
+    ( ...xs )  => 
+    ( ...ys )  => 
+    ( ctx )   => {
+  // ENTRY
+    ctx.node.classList.add( ...xs, ...ys );
+  // EXIT
+    if( !ctx.leeways ) ctx.exits.push( () => { ctx.node.classList.remove( ...xs, ...ys ); } )
+  };
+</script>
+
+<h3>A query metatag</h3>
+<p><code>[ query( &lt;str query&gt;), &lt;itag+ itags&gt; ]</code> Given a <code>query</code>, embody <code>itags</code> with each node as context</p>
+
+<script class="listing-here-new">
+  $$.bact.query = 
+    ( query )    => 
+    ( ...itags ) => 
+    ( ctx )     => {
+  // ENTRY
+    const nodes = ctx.node.querySelectorAll( query );
+    for(  let node of nodes )
+      for( let itag of itags )
+        $.syntax.itag( itag )( Context( { node }, ctx ) );
+  // EXIT -- no exit actions needed; the descendants take care of themselves
+  };
+</script>
+
+
+<h2>Demo: Using metatags with different syntax</h2>
+<h3>Some HTML to render</h3>
+  <pre><code class='lang-html'>
+    &lt;h1&gt;'Hello [h1]!&lt;/h1&gt;
+    &lt;p&gt;Hello &lt;p&gt;! Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.&lt;/p&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Hello [li] one&lt;/li&gt;
+      &lt;li&gt;Hello [li] two&lt;/li&gt;
+      &lt;li&gt;Hello [li] three&lt;/li&gt;
+    &lt;/ul&gt;
+  </code></pre>
+
+<h2>Plain metatag syntax</h2>
+<p class="intro">Demo area: <code>#demo2</code></p>
+<p id="demo2" class="demo"></p>
+<p>
+yeah
+</p>
+<script class="demo listing-here-new">
+  [ 'query #demo2'
+  , [ 'tag h1', "Hello [h1]!" ]
+  , [ 'tag p', `Hello [p]! Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.` ]
+  , [ 'tag ul'
+    , [ 'tag li', "Hello [li] one" ]
+    , [ 'tag li', "Hello [li] two" ]
+    , [ 'tag li', "Hello [li] three" ]
+    ]
+  ].itag( { node: document.body , exits: [] }  );
+</script>
+
+
+
+<h2>Glanceable metatag syntax</h2>
+<p class="intro">Demo area: <code>#demo3</code></p>
+<p id="demo3" class="demo"></p>
+<p>
+yeah
+</p>
+<script class="demo listing-here-new">
+  [ 'query #demo3'
+  , [ '<h1>', "Hello [h1]!" ]
+  , [ '<p>', `Hello [p]! Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.` ]
+  , [ '<ul>'
+    , [ '<li>', "Hello bold [li] one" ]
+    , [ '<li>', "Hello [li] two" ]
+    , [ '<li>', "Hello [li] three" ]
+    ]
+  ].itag( { node: document.body , exits: [] }  );
+</script>
+
+
+<h2>Other metatags syntax</h2>
+<p class="intro">Demo area: <code>#demo4</code></p>
+<p id="demo4" class="demo"></p>
+<p>Note that in stead of the speical attribute syntax of html, we just use metatags for things like classes, style or attributes. This gives lets us treat them in a uniform way, and they can naturally appear by themselves. A point is that they reflect the nature of DOM manipultion rather than HTML conrete syntax.
+</p>
+<script class="demo listing-here-new">
+  [ 'query #demo4'
+  , [ '<h1>', "Hello [h1]!" ]
+  , [ '<p>', `Hello [p]! Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.` ]
+  , [ '<ul>'
+    , [ '.my-class' ]
+    , [ '~color','red' ]
+    , [ '@name','MrLiszt' ]
+    , [ '<li>'
+        , "Hello bold [li] one"
+        , [ '~font-weight', 'bold' ]
+      ]
+    , [ '<li>', "Hello [li] two" ]
+    , [ '<li>', "Hello [li] three" ]
+    ]
+  ].itag( { node: document.body , exits: [] }  );
+</script>
+
+<h2>Chapter summary</h2>
+<p>We have arrived at a glanceable, non-relativistic syntax that is natural to extend with more metatags.</p>
+</article>
+
+
+<script>
+
+</script>
+  </body>
+</html>
+
+
+
+<!-- junk
+
+-->
+
+
+
+<!-- junk
+-->

@@ -1,0 +1,274 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ch2</title>
+
+    <link href= "style--general.css" rel="stylesheet">
+
+    <link href= "style--numbering.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/@highlightjs/cdn-assets@11.3.1/styles/vs.min.css">
+    <script src="lib/highlight.min.js"></script>
+    <script src="itags--prelude.js"></script>
+    <script src="ch0.js"></script>
+  </head>
+  <body>
+
+
+
+
+<article class="LitProgEssay">
+<header class="LitProgEssay__titlebar" id="docnav"></header>
+<section>
+<h1 data-ch='2'>Syntax</h1>
+<h2>Glanceability</h2>
+<p class="intro">It would be great with a succint, useful syntax. Here, we take `useful` to, mean `glanceable`. The priority being that code that looks correct should be correct to a high degree.</p>
+<h2>Embedded in js</h2>
+<p>We do only embedded syntax in this chapter. A syntax embedded in js means the syntax can only consist of js data structures and not just one big string. Actually we go for a mix, and use arrays for tags, similar to lists in lisp for s-expressions. But for tag heads (the first argument of the tag) we allow strings with a simple syntax. </p>
+
+<h2>We design for two forms of glanceability</h2>
+<ol>
+<li>Glanceable markup structure. Just glancing should give info on the basic structure of the markup and the fundamental nature of a tag.</li>
+<li>Glancable valence/Absoluteness. Metatags are higher-order functions. If we consider the langauge level as base, they are second-order (valence 2). Functional syntax in js and most PL's give no hint of the valence. A markup language should reveal the valence at a glance.</li>
+</ol>
+<h2>Namespaces for syntax</h2>
+<script class="listing-here-new-old">
+  const $  = {}; // namespace for utility functionality
+  const $$ = {}; // namespace for metatag related stuff
+  $$.entry = {}; // namespace for metatags
+</script>
+<script class="listing-here-new">
+  $.syntax = {}; // namespace for syntax-related stuff
+</script>
+
+<h2>Syntax definition</h2>
+<h3>Head syntax</h3>
+<p></p>
+<script class="listing-here-new">
+    $.syntax.args = ( str ) => {
+      console.log( 'argstr: ', str );
+    const marr = str.match( /\S+/g ); // returns null if no match
+    return marr? marr: []; // consistent empty return
+  }
+  $.syntax.head = Match
+  // NO SYNTAX  
+    ( _Function , fn => fn
+  // PLAIN HEAD SYNTAX
+    , /^([a-z]+)/   , ( metatag, argstr ) => $$.entry[ metatag ]( $.syntax.args( argstr ) )
+  // GLANCEABLE HEAD SYNTAX
+    , /^<([^>]+)>$/ , ( argstr ) => $$.entry.tag( ...$.syntax.args( argstr ) )
+    , /^@/          , ( argstr ) => $$.entry.attr( ...$.syntax.args( argstr ) )
+    , /^\./         , ( argstr ) => $$.entry.class( ...$.syntax.args( argstr ) )
+    , /^~/          , ( argstr ) => $$.entry.style( ...$.syntax.args( argstr ) )
+    );
+    
+</script>
+
+
+<h3>Itag Syntax</h3>
+<p></p>
+<script class="listing-here-new">
+  $.syntax.itag = Match
+    ( _Function , fn => fn
+    , _Array    , ([ head, ...args ]) =>
+                    $.syntax.head( head )( ...args )
+    , _String   , str => $$.entry.textnode( str )
+    , _Number   , n => $$.entry.textnode( n.toString() )
+    )
+  ;
+</script>
+
+<h3>Convenience method for itag syntax</h3>
+<script class="listing-here-new">
+  const itag_method = function( node ){
+    if( isString( node ) ) node = document.querySelector( node );
+    return $.syntax.itag( this )( node );
+  }
+  Function.prototype.itag = itag_method;
+  Array.prototype.itag = itag_method;
+  String.prototype.itag = itag_method;
+  Number.prototype.itag = itag_method;
+  
+</script>
+
+
+<h2>Usage of syntax</h2>
+
+<h3>Text-nodes</h3>
+<script class="listing-here-old">
+  $$.entry.textnode = 
+    ( ...strs ) =>
+    ( node ) => {
+  // ENTRY
+    const el = document.createTextNode( strs.join( '' ) );
+    node.appendChild( el );
+  };
+</script>
+
+<h3>The HTML tag metatag</h3>
+<script class="listing-here-new">
+  $$.entry.tag = 
+    ( tagname )   =>
+    ( ...sitags ) => // syntactic itags
+    ( node )      => {
+      console.log('"',tagname)
+  // ENTRY
+    const node_ = document.createElement( tagname );
+    node.appendChild( node_ );
+  // ENTRY DESCENDANTS
+    for( let sitag of sitags )
+      $.syntax.itag( sitag )( node_ ); // support array syntax
+  };
+</script>
+
+<h3>The HTML attr metatag</h3>
+
+<script class="listing-here-old">
+  $$.entry.attr = 
+    ( k )   => 
+    ( v )   =>
+    ( node ) => {
+  // ENTRY
+    node.setAttribute( k, v );
+  };
+
+</script>
+
+<h3>The HTML style metatag</h3>
+<script class="listing-here-old">
+  $$.entry.style =
+    ( k )    =>
+    ( v )    =>
+    ( node ) => {
+  // ENTRY
+    node.style[ k ] = v;
+  };
+</script>
+
+<h3>The HTML class metatag</h3>
+<script class="listing-here-old">
+  $$.entry.class = 
+    ( ...xs )  => 
+    ( ...ys )  => 
+    ( node )   => {
+  // ENTRY
+    node.classList.add( ...xs, ...ys );
+  };
+</script>
+
+<h3>A query metatag</h3>
+<p><code>[ query( &lt;str query&gt;), &lt;itag+ itags&gt; ]</code> Given a <code>query</code>, embody <code>itags</code> with each node as context</p>
+<script class="listing-here-new">
+  $$.entry.query = 
+    ( query )    => 
+    ( ...itags ) => 
+    ( node )     => {
+  // ENTRY
+    const nodes = node.querySelectorAll( query );
+    for(  let node_ of nodes )
+      for( let itag of itags )
+        $.syntax.itag( itag )( node_ ); // support array syntax
+  };
+</script>
+
+
+
+
+<h2>Demo: Using metatags with different syntax</h2>
+<h3>Some HTML to render</h3>
+  <pre><code class='lang-html'>
+    &lt;h1&gt;'Hello [h1]!&lt;/h1&gt;
+    &lt;p&gt;Hello &lt;p&gt;! Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.&lt;/p&gt;
+    &lt;ul&gt;
+      &lt;li&gt;Hello [li] one&lt;/li&gt;
+      &lt;li&gt;Hello [li] two&lt;/li&gt;
+      &lt;li&gt;Hello [li] three&lt;/li&gt;
+    &lt;/ul&gt;
+  </code></pre>
+
+<h2>Plain metatag syntax</h2>
+<p class="intro">Demo area: <code>#demo2</code></p>
+<p id="demo2" class="demo"></p>
+<p>
+yeah
+</p>
+<script class="demo listing-here-new">
+  [ 'query #demo2'
+  , [ 'tag h1', "Hello [h1]!" ]
+  , [ 'tag p', `Hello [p]! Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.` ]
+  , [ 'tag ul'
+    , [ 'tag li', "Hello [li] one" ]
+    , [ 'tag li', "Hello [li] two" ]
+    , [ 'tag li', "Hello [li] three" ]
+    ]
+  ].itag( document.body );
+</script>
+
+
+
+<h2>Glanceable metatag syntax</h2>
+<p class="intro">Demo area: <code>#demo3</code></p>
+<p id="demo3" class="demo"></p>
+<p>
+yeah
+</p>
+<script class="demo listing-here-new">
+  [ 'query #demo3'
+  , [ '<h1>', "Hello [h1]!" ]
+  , [ '<p>', `Hello [p]! Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.` ]
+  , [ '<ul>'
+    , [ '<li>', "Hello bold [li] one" ]
+    , [ '<li>', "Hello [li] two" ]
+    , [ '<li>', "Hello [li] three" ]
+    ]
+  ].itag( document.body );
+</script>
+
+
+<h2>Other metatags syntax</h2>
+<p class="intro">Demo area: <code>#demo4</code></p>
+<p id="demo4" class="demo"></p>
+<p>Note that in stead of the speical attribute syntax of html, we just use metatags for things like classes, style or attributes. This gives lets us treat them in a uniform way, and they can naturally appear by themselves. A point is that they reflect the nature of DOM manipultion rather than HTML conrete syntax.
+</p>
+<script class="demo listing-here-new">
+  [ 'query #demo4'
+  , [ '<h1>', "Hello [h1]!" ]
+  , [ '<p>', `Hello [p]! Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.` ]
+  , [ '<ul>'
+    , [ '.my-class' ]
+    , [ '~color','red' ]
+    , [ '@name','MrLiszt' ]
+    , [ '<li>'
+        , "Hello bold [li] one"
+        , [ '~font-weight', 'bold' ]
+      ]
+    , [ '<li>', "Hello [li] two" ]
+    , [ '<li>', "Hello [li] three" ]
+    ]
+  ].itag( document.body );
+</script>
+
+<h2>Chapter summary</h2>
+<p>We have arrived at a glanceable, non-relativistic syntax that is natural to extend with more metatags.</p>
+</article>
+
+
+<script>
+
+</script>
+  </body>
+</html>
+
+
+
+<!-- junk
+
+-->
+
+
+
+<!-- junk
+-->
