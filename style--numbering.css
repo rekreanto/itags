@@ -5,13 +5,13 @@ h1 { counter-reset: h2 }
 h2 { counter-reset: h3 }
 
 
-h1:before {
+/* h1:before {
   counter-increment: chapter;
   content : "Chapter " attr(data-ch) ". ";
   display: block;
   opacity: 0.5;
 }
-
+ */
 h2:before { 
   counter-increment: h2;
   content :  counter( h2, decimal ) ". "; }

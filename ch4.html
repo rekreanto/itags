@@ -32,9 +32,129 @@
 <p>A layer is an orthogonal combination of body and state. </p>
 <h3>Ground</h3>
 <p>We use the designation "<code>ground</code>" for the layer we currently focus on. To be ground is not an intrisic property of the layer, but a perceived role. Thus any layer can be perceived as "ground". The concept of "ground" is fundamental, since important concepts such as mutability and transitions are defined relative to ground. A layer machine can not be properly understood without the concept of ground.</p>
-<h3>Relativistic immutability</h3>Mutability is defined relative to ground: The value of the ground layer can chage. Every upper layer depends on this value. The body of the ground as well as everything below it is perceived as immutable from the perspective of the ground. In other words: everything below ground is guaranteed to have a longer life-span than ground, and everything above ground is guaranteed to have a shorter life-span than ground. thus a layer can alwas trus in the lower lauers and will always form a firm trustworthy fundament for the upper layers.</p>
+<h3>Relativistic immutability</h3><p>Mutability is defined relative to ground: The value of the ground layer can chage. The upper layer depends directly on this value. The body of the ground as well as everything below it is perceived as immutable from the perspective of the ground. In other words: everything below ground is guaranteed to have a longer life-span than ground, and everything above ground is guaranteed to have a shorter life-span than ground. thus a layer can alwas trus in the lower lauers and will always form a firm trustworthy fundament for the upper layers.</p>
 
-<h2></h2>
+<h2>Expressivity of metatags</h2>
+<p>Itags can express rendering of DOM according to HTML markup. That level of expressivity is made possibly by the universal acces to the node content. They can do so without any explicit mentioning of parent nodes etc. The reason is that every itag by appearing as lexical parts of the markup are guaranteed to receive the parent node. Since it is given but not explicitly mentioned, we call it the context. In order to increase the expressivity of metatags so that they can express all the features of state-machines, we extend the caontext ot also include the layers.
+
+</p>
+
+<h2>Constructors</h2>
+<h3>Case Analyses Functions</h3>
+<p>Case Analyses Functions, <code>Cafun</code> for short, treats maps and functions uniformly: A map consumes the first argument, using it as a key. Then the evaluation recurses. a function consumes all remaining arguments. This is useful because ground-mounted transitions expressed as Cafuns work seamlessly with finite and infinite state.</p>
+<script class="listing-here-new">
+  const Cafun = Match
+    ( _Function , fn  => ( ...xs )    => fn( ...xs )
+    , _ObjLit   , obj => 
+      Match
+        ( _None , ()           => obj[ k ]
+                , ( k, ...xs ) => Cafun( obj[ k ] )( ...xs ) 
+        )
+    )
+  ;
+</script>
+
+<script class="listing-here-hidden">
+  const Context = 42;
+
+</script>
+<h2>Ground actions: The interface between metatags and layer machine</h2>
+<h3>The <code>State</code> ground action</h3>
+<script class="listing-here-new">
+  const State = ( ...instrs ) => g => {
+    g.disembody();
+    g.setState( ...instrs );
+  }
+</script>
+<h3>The <code>Trans</code> ground action</h3>
+<script class="listing-here-new">
+  const Trans = Match
+    ( _Function , cfn => g => g.transition( cfn ) 
+    , _String   , str => g => Object.hasOwn( g.trans, str )
+                            ? Trans( g.trans[ str ] )( g )
+                            : Trans( str )( g.lower )
+    )
+  ;
+</script>
+
+<h2>Layers</h2>
+<h3>The base layer constructor <code>FlatLayer</code></h3>
+<script class="listing-here-new">
+  const FlatLayer = ( ground ) => {
+    const lay = 
+      { env: {}
+      , exits: []
+      , disembody(){
+          for( exit in exits ) exit();
+        }
+      , getState( xs=[] ){
+          return xs;
+        }
+      , setState( state ){
+          // a flat layer can't hold state
+          // assert state == []
+          // do nothing
+        }
+      }
+    ;
+    return lay;
+  }
+</script>
+
+<h3>The <code>OneOfLayer</code> Mixin</h3>
+<script class="listing-here-new">
+  const OneOfLayer = lay => {
+    const mixin = 
+      { embos: []
+      , getState( state=[] ){
+          this.upper.getState( state );
+          state.push( this.val );
+          return xs;
+        }
+      , setState( x, ...xs ){
+          // this.val = x
+          // this.embo[ x ]( ...xs )
+        }
+      }
+    ;
+    return Object.assign( lay, mixin );
+  }
+</script>
+
+<h3>The <code>PatternLayer</code> Mixin</h3>
+<script class="listing-here-new">
+  const PatternLayer = lay => {
+    const mixin = 
+      { embos: []
+      , getState( state=[] ){
+          this.upper.getState( state )
+          state.push( ...this.vals );
+          return xs;
+        }
+      , setState( ...xs ){
+          this.vals = xs
+          // this.embo( ...xs )
+        }
+      }
+    ;
+    return Object.assign( lay, mixin );
+  }
+</script>
+
+
+<h3>The <code>AllOfLayer</code> Mixin</h3>
+<script class="listing-here-new">
+
+</script>
+
+
+
+
+<!-- HERE -->
+
+
+
+
 
 
 <script class="listing-here-hidden">

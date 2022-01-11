@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lay Demo Progression</title>
+
+    <link href= "style--general.css" rel="stylesheet">
+
+    <link href= "style--numbering.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="https://unpkg.com/@highlightjs/cdn-assets@11.3.1/styles/vs.min.css">
+    <script src="lib/highlight.min.js"></script>
+
+
+    <link href= "lay--demo.css" rel="stylesheet">
+
+    <script src="lay-ch1--setup.js"></script>
+    <script src="lay-ch2--prelude.js"></script>
+    <script src="lay-ch3--context.js"></script>
+    <script src="lay-ch4--layers.js"></script>
+    <script src="lay-ch5--metatags.js"></script>
+    <script src="lay-ch6--syntax.js"></script>
+    <script src="lay-ch7--compile.js"></script>
+    <script src="lay-ch8--deco.js"></script>
+    <script src="lay--demo.js"></script>
+  
+  
+  </head>
+  <body>
+    <h1 class="nocount">Lay Demo Progression</h1>
+
+    <h2>Without tag syntax and without metatag syntax</h2>
+    <script class="demo-here active">
+      $2.tag( 'div' )
+      ( $2.tag( 'h1' )( "Hello Demo" )
+      , $2.tag( 'p' )( 'Without tag syntax' )
+      , $2.tag( 'ul' )
+        ( $2.tag( 'li' )( "list item #1" )
+        , $2.tag( 'li' )( "list item #2" )
+        , $2.tag( 'li' )( "list item #3" )
+        )
+      )
+      
+    </script>
+
+
+    <h2>With tag syntax but without metatag syntax</h2>
+    <script class="demo-here active">
+    [ $2.tag( 'div' )
+    , [ $2.tag( 'h1' ), "Hello Demo" ]
+    , [ $2.tag( 'p' ), 'With tag syntax, without metatag syntax' ]
+    , [ $2.tag( 'ul' )
+      , [ $2.tag( 'li' ), "list item #1" ]
+      , [ $2.tag( 'li' ), "list item #2" ]
+      , [ $2.tag( 'li' ), "list item #3" ]
+      ] 
+    ]
+
+    </script>
+    
+    <h2>With tag and metatag syntax</h2>
+    <script class="demo-here active">
+      [ '<div>'
+      , [ '<h1>', "Hello Demo" ]
+      , [ '<p>', 'With tag and metatag syntax' ]
+      , [ '<ul>'
+        , [ '<li>', "list item #1" ]
+        , [ '<li>', "list item #2" ]
+        , [ '<li>', "list item #3" ]
+        ] 
+      ]
+    </script>
+  
+    <h2>Style metatags</h2>
+    <script class="demo-here active">
+      [ '<div>'
+      , [ '<h1>', "Hello Style Metatag Demo!" ]
+      , [ '<p>'
+        , `Lorem ipsum dolor sit `
+        , `amet, consectetur adipisicing `
+        , `elit, sed do eiusmod tempor `
+        , `incididunt ut labore et `
+        , `dolore magna aliqua.` 
+        ]
+      , [ '<ul>'
+        , [ '~color','red' ]
+        , [ '<li>'
+            , "Hello bold list item"
+            , [ '~font-weight', 'bold' ]
+          ]
+        , [ '<li>', "Hello [li] two" ]
+        , [ '<li>', "Hello [li] three" ]
+        ]
+      ]
+    </script>
+      
+    <h2>Yeah</h2>
+    <script class="demo-here active">
+  [ '<div>'
+    // structure
+    , [ '<h1>', "Hello Demo" ]
+    , [ '<p>', 'With tag and metatag syntax' ]
+    , [ '<ul>'
+      , [ '<li warning>', "watch out for the dog" ]
+      , [ '<li>', "list item #2" ]
+      , [ '<li>', "list item #3" ]
+      ]
+    // format
+    /* , [ 'the warning'
+      , [ '~color', 'red' ]
+      , [ '~font-weight', 'bold' ]
+      ]
+     */]    
+    </script>
+
+    <h2>Yeah</h2>
+    <script class="demo-here ">
+
+    </script>
+
+    <h2>Yeah</h2>
+    <script class="demo-here ">
+
+    </script>
+
+    <h2>Yeah</h2>
+    <script class="demo-here ">
+
+    </script>
+
+
+    <div id="demo-x"></div>
+  </body>
+  </html>
+  
