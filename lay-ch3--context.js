@@ -3,7 +3,7 @@ const Context0 = () => Context1( document.body )
 // 1-ary Context call
 // Context( <node> )
 const Context1 = Match
-  ( _Node, node => ({ node, exits: [] })
+  ( _Node, node => { return { node, layer: Layer( ) } }
   , _ObjLit, obj => obj
   , _String, query => {
     const node = Context1( document.querySelector( query ) );

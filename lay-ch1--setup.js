@@ -24,8 +24,7 @@ const undo = () => {
 const itag_method = function( ...mctx ){
   const ctx = Context( ...mctx );
   $.syntax.itag( this )( ctx );
-  console.log( ctx.exits );
-  stack.push( ctx.exits  );
+  stack.push( ctx.layer.exits  );
 }
 Function.prototype.itag = itag_method;
 Array.prototype.itag = itag_method;

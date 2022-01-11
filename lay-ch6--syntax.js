@@ -16,13 +16,17 @@ const trimsplit =
 // Metatag Syntax
 $.syntax.head = Match
   ( _Function        , fn => fn
-// GENERAL metatag syntax
+// GENERAL metatag valence-2 syntax
+  , /^([a-z]\S*$)/    , ( metatagname )  => $1[ metatagname ]    
+// GENERAL metatag valence-2 syntax
   , /^([a-z]\S*)/    , ( metatagname, argstr )  => $2[ metatagname ]( ...trimsplit( argstr ) )
 // SPECIAL metatag syntaxes
   , /^<([^>]+?)>$/   , argstr    => $2.tag( ...trimsplit( argstr ) )
   , /^<([^>]+?)>$/   , tagname   => $2.tag( tagname )
   , /^<>(\S+)$ /     , blockname => $2.block( blockname )  
   , /^~(\S+)$/       , propname  => $2.style( propname )  
+// TRANSITION definition
+  , /^([A-Z_])$/     ,  
   )
 ;
 // Itag Syntax

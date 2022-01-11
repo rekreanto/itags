@@ -18,7 +18,7 @@
     <script src="lay-ch1--setup.js"></script>
     <script src="lay-ch2--prelude.js"></script>
     <script src="lay-ch3--context.js"></script>
-    <script src="lay-ch4--layers.js"></script>
+    <script src="lay-ch4--layer.js"></script>
     <script src="lay-ch5--metatags.js"></script>
     <script src="lay-ch6--syntax.js"></script>
     <script src="lay-ch7--compile.js"></script>
@@ -61,7 +61,7 @@
     
     <h2>With tag and metatag syntax</h2>
     <script class="demo-here active">
-      [ '<div>'
+      [ 'block Demo'
       , [ '<h1>', "Hello Demo" ]
       , [ '<p>', 'With tag and metatag syntax' ]
       , [ '<ul>'
@@ -95,28 +95,42 @@
       ]
     </script>
       
-    <h2>Yeah</h2>
+    <h2>The role and the ref metatags</h2>
     <script class="demo-here active">
-  [ '<div>'
+  [ 'block RefDemo'
     // structure
-    , [ '<h1>', "Hello Demo" ]
-    , [ '<p>', 'With tag and metatag syntax' ]
+    , [ '<h1>', "Hello role/ref Demo" ]
+    , [ '<p>', 'support role/ref' ]
     , [ '<ul>'
       , [ '<li warning>', "watch out for the dog" ]
       , [ '<li>', "list item #2" ]
       , [ '<li>', "list item #3" ]
       ]
     // format
-    /* , [ 'the warning'
+    , [ 'the warning'
       , [ '~color', 'red' ]
       , [ '~font-weight', 'bold' ]
       ]
-     */]    
+    ]    
     </script>
 
-    <h2>Yeah</h2>
+    <h2>With Layer</h2>
     <script class="demo-here ">
-
+      [ 'block UpCounter'
+      // layer value
+      , [ '::<int>' ]
+      // body
+      , [ '<h1 title>', 'UpCounter' ]
+      , [ '<div display>' ]
+      , [ '<button reset-btn>'
+        , "0"
+        , [ 'bind click', Trans( _ => State( 0 ) ) ]
+        ]
+      , [ '<button up-btn>'
+        , "+1"
+        , [ 'bind click', Trans( n => State( n+1 ) ) ]
+        ]
+      ]
     </script>
 
     <h2>Yeah</h2>
@@ -131,6 +145,19 @@
 
 
     <div id="demo-x"></div>
+
+
+    <!-- NOTIFY if not evergreen browser -->
+    <!--script> 
+      var $buoop = {required:{e:-4,f:-3,o:-3,s:-1,c:-3},insecure:true,api:2022.01 }; 
+      function $buo_f(){ 
+       var e = document.createElement("script"); 
+       e.src = "//browser-update.org/update.min.js"; 
+       document.body.appendChild(e);
+      };
+      try {document.addEventListener("DOMContentLoaded", $buo_f,false)}
+      catch(e){window.attachEvent("onload", $buo_f)}
+      </script-->
   </body>
   </html>
   

@@ -11,7 +11,6 @@ document.addEventListener('DOMContentLoaded', ( ev ) => {
   // find all <script> tags
   document.querySelectorAll('script.demo-here').forEach(
     ( el ) => {
-      console.log("el")
       const listing = document.createElement( 'pre' );
       const code = document.createElement( 'code' );
       listing.classList.add('demo-here');
@@ -32,7 +31,6 @@ document.addEventListener('DOMContentLoaded', ( ev ) => {
   // find all <script> tags
   document.querySelectorAll('script.demo-here.active').forEach(
     ( el ) => {
-      console.log("active:", "el");
     // create and mount demo output element
       const output = document.createElement( 'div' );
       output.classList.add('demo-output-here');
