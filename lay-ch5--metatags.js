@@ -43,7 +43,7 @@ $1.role =
 // STORE ref to node
   for( let rolename of rolenames ){
     ctx.layer.env[ rolename ] = ctx.node;
-    console.log( "layer", ctx.layer );
+    
   }
 // REFLECT BEM rolenames
   for( let rolename of rolenames ){
@@ -55,15 +55,16 @@ $1.role =
 
 $2.the =
   ( noun ) =>
-  ( ...syntags ) => // syntactic itags
+  ( ...syntexps ) => // syntactic tag expressions
   ctx =>
 {
+  console.log( noun, ctx.layer )
 // LOOKUP
   const node = ctx.layer.lookup( noun );
 // PROJECT
   const ctx_ = Context( { node }, ctx );
 // PROCESS descendants
-  for( let syntag of syntags )
+  for( let syntag of syntexps )
     $.syntax.itag( syntag )( ctx_ ); 
 }
 
@@ -110,19 +111,38 @@ $1.class =
   ; 
 };
 
-$1.val =
-  ( stx ) => // syntax
+$2.value = Match
+  ( /^<([^>]+?)>$/, signature => $.value_args( signature )
+  , /^one-of\s+/  , argsyntax => $.value_oneof( ...trimsplit( argsyntax ) )
+  , /^all-of\s+/  , argsyntax => $.value_allof( ...trimsplit( argsyntax ) )  
+  )
+;
+$.value_args =   
+  ( signature ) => // syntax
+  () =>
   ( ctx ) => 
 {
-
+// EXTEND layer with data structures  
+  ctx.layer.embos = [];
+  ctx.layer.trans = {};
+// EXTEND layer with methods
+  ctx.layer.getState = args_getState;
+  ctx.layer.embodyState = args_embodyState;
+// Log  
+  console.log("metatag value_args")
 };
-
-$2.bind =
-  ( eventname ) =>
-  ( trans ) =>
-  ( ctx ) =>
-{
-
+$2.bind_event = ( eventname ) => ( trans ) => ( ctx ) =>
+{ console.log( 'BIND TAG anon read' )
+  const ground = ctx.layer;
+  ctx.node.addEventListener
+    ( eventname
+    , () => {
+        console.log( `The event '${ eventname }' was emitted` );
+        // PERFORM ground action 
+        trans( ground );
+      } 
+    )
+  ;
 };
 
 $2.trans = 
@@ -132,3 +152,18 @@ $2.trans =
 {
 
 };
+
+$1.embo = ( embo ) => ( ctx ) => 
+{ /* STORE embodiment */
+  ctx.layer.embos.push( { node: ctx.node, embo } );
+};
+
+$2.embo = ( key ) => ( texp ) => ( ctx ) => 
+{ /* STORE embodiment */
+  ctx.layer.embos.push
+    ( { node: ctx.node
+      , embo: { key: texp }
+      } 
+  ); 
+};
+

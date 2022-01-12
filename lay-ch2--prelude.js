@@ -170,3 +170,19 @@ const testMatch = Match
 ].forEach( ( [ a, b ] ) => { 
     console.assert( testMatch( a ) == b , `testCase( ${ a } ) !== ${ b }` ) 
   } );
+
+
+// well-behaved split; 
+// + trims off leading and trailing white-space
+// + empty input string returns empty array
+const trimsplit = 
+str => {
+// FIX the bad edge case  ''.split(' ') ~> ['']
+if( !str ) return [];
+// SPLIT on whitespace
+const re = /\s+/;
+// TRIM
+str = str.trim();
+// RETURN the actual splitting
+return str.split( re );
+};

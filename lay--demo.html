@@ -31,7 +31,7 @@
     <h1 class="nocount">Lay Demo Progression</h1>
 
     <h2>Without tag syntax and without metatag syntax</h2>
-    <script class="demo-here active">
+    <script class="demo-here non-active">
       $2.tag( 'div' )
       ( $2.tag( 'h1' )( "Hello Demo" )
       , $2.tag( 'p' )( 'Without tag syntax' )
@@ -46,7 +46,7 @@
 
 
     <h2>With tag syntax but without metatag syntax</h2>
-    <script class="demo-here active">
+    <script class="demo-here non-active">
     [ $2.tag( 'div' )
     , [ $2.tag( 'h1' ), "Hello Demo" ]
     , [ $2.tag( 'p' ), 'With tag syntax, without metatag syntax' ]
@@ -60,7 +60,7 @@
     </script>
     
     <h2>With tag and metatag syntax</h2>
-    <script class="demo-here active">
+    <script class="demo-here non-active">
       [ 'block Demo'
       , [ '<h1>', "Hello Demo" ]
       , [ '<p>', 'With tag and metatag syntax' ]
@@ -73,8 +73,8 @@
     </script>
   
     <h2>Style metatags</h2>
-    <script class="demo-here active">
-      [ '<div>'
+    <script class="demo-here non-active">
+      [ 'block Demo'
       , [ '<h1>', "Hello Style Metatag Demo!" ]
       , [ '<p>'
         , `Lorem ipsum dolor sit `
@@ -96,8 +96,8 @@
     </script>
       
     <h2>The role and the ref metatags</h2>
-    <script class="demo-here active">
-  [ 'block RefDemo'
+    <script class="demo-here non-active">
+  [ '<>RefDemo'
     // structure
     , [ '<h1>', "Hello role/ref Demo" ]
     , [ '<p>', 'support role/ref' ]
@@ -114,27 +114,52 @@
     ]    
     </script>
 
-    <h2>With Layer</h2>
-    <script class="demo-here ">
-      [ 'block UpCounter'
+    <h2>Counter with inlined transitions</h2>
+    <script class="demo-here active">
+      [ '<>UpCounter'
       // layer value
       , [ '::<int>' ]
       // body
       , [ '<h1 title>', 'UpCounter' ]
-      , [ '<div display>' ]
+      , [ '<div display>', [ '/', n => n ] ]
       , [ '<button reset-btn>'
         , "0"
-        , [ 'bind click', Trans( _ => State( 0 ) ) ]
+        , [ '!click', Trans( _ => State( 0 ) ) ]
         ]
       , [ '<button up-btn>'
         , "+1"
-        , [ 'bind click', Trans( n => State( n+1 ) ) ]
+        , [ '!click', Trans( n => State( n+1 ) ) ]
         ]
+      // transitions
+      , [ 'INIT', () => State( 0 ) ]
+      // embodiments
+      , [ '/', n => [ 'the title', [ '~background-color', 'darkblue'] ] ]
       ]
     </script>
 
-    <h2>Yeah</h2>
-    <script class="demo-here ">
+    <h2>Counter with named transitions</h2>
+    <script class="demo-here">
+    [ '<>UpCounter'
+    // layer value
+    , [ '::<int>' ]
+    // body
+    , [ '<h1 title>', 'UpCounter' ]
+    , [ '<div display>' ]
+    , [ '<button reset-btn>'
+      , "0"
+      , [ '!click', Trans( 'INCR' ) ]
+      ]
+    , [ '<button up-btn>'
+      , "+1"
+      , [ '!click', Trans( 'RESET' ) ]
+      ]
+    // transitions
+    , [ 'INIT', () => State( 0 ) ]
+    , [ 'RESET', _ => State( 0 ) ]
+    , [ 'INCR' , n => State( n+1 ) ]
+    // embodiments
+    , [ '/', n => [ 'the display', n ] ]
+    ]
 
     </script>
 
