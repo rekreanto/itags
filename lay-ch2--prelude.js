@@ -102,7 +102,7 @@ const _parseFloat = str => ( succ, fail ) => Case
   )( parseFloat( str ) )
 ;
 
-const _eq  = y => x => ( succ, fail ) => ( x === y? succ: fail )( x );
+const _eq  = y => ( x, ...xs ) => ( succ, fail ) => ( x === y? succ: fail )( x, ...xs );
 const _gt  = y => x => ( succ, fail ) => ( x  >  y? succ: fail )( x );
 const _lt  = y => x => ( succ, fail ) => ( x  <  y? succ: fail )( x );
 const _gte = y => x => ( succ, fail ) => ( x  >= y? succ: fail )( x );
@@ -127,6 +127,7 @@ const _re = re => x => ( succ, fail ) => {
   // succeed with substrings captured by groups, followed by the rest of the input string
   return succ( ...captures, rest );
 };
+
 
 // Match( ( <pattern>, <fn> )+ | <fn> )
 const Match = ( ...pfs ) => ( ...xs ) => {

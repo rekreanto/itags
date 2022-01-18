@@ -102,7 +102,7 @@ const _parseFloat = str => ( succ, fail ) => Case
   )( parseFloat( str ) )
 ;
 
-const _eq  = y => x => ( succ, fail ) => ( x === y? succ: fail )( x );
+const _eq  = y => ( x, ...xs ) => ( succ, fail ) => ( x === y? succ: fail )( x, ...xs );
 const _gt  = y => x => ( succ, fail ) => ( x  >  y? succ: fail )( x );
 const _lt  = y => x => ( succ, fail ) => ( x  <  y? succ: fail )( x );
 const _gte = y => x => ( succ, fail ) => ( x  >= y? succ: fail )( x );

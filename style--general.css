@@ -18,6 +18,14 @@ a, a:visited, a:active {
 
 }
 
+.demo-output-here h1 {
+  background-color: darkblue;
+}
+
+.demo-output-here {
+  background-color: hsl(240, 30%, 95%);
+}
+
 .LitProgEssay__ch-nav {
   display: inline-block;
 }
@@ -46,6 +54,7 @@ p.intro {
 
 
 h1 {
+  text-align: center;
   color: hsla( 40, 61.8%, 100%, 0.8 );
   background-color: hsla( 40, 61.8%, 34%, 1 );
   margin-top: 0;
@@ -80,8 +89,8 @@ pre.listing-here-new {
   background-color: hsl( 40, 80%, 95% ) !important;
   border-top: solid 1px hsl( 40, 80%, 80% );
   border-bottom: solid 1px hsl( 40, 80%, 80% );
-
 }
+
 h1, h2, h3 {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-weight: 300;

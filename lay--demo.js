@@ -25,8 +25,29 @@ document.addEventListener('DOMContentLoaded', ( ev ) => {
 });
 
 
+document.addEventListener('DOMContentLoaded', (event) => {
+  hljs.configure({ ignoreUnescapedHTML: true });
+  // find all <script> tags
+  document.querySelectorAll('script.listing-here').forEach((el) => {
+    const listing = document.createElement( 'pre' );
+    const code = document.createElement( 'code' );
+    listing.appendChild( code );
+    const txt = el.textContent;
+    // normalize trailing whitespace
+    code.textContent = `${ txt.trimEnd() }\n\n`; 
+    listing.classList.add
+      ( 'language-js'
+      , 'listing-here'
+      )
+    ;
+    el.parentNode.insertBefore(listing, el);
+    hljs.highlightElement( listing );
+  });
+});
 
-// reflect code listings into the document
+
+
+// show and render demo code
 document.addEventListener('DOMContentLoaded', ( ev ) => {
   // find all <script> tags
   document.querySelectorAll('script.demo-here.active').forEach(
@@ -48,6 +69,8 @@ document.addEventListener('DOMContentLoaded', ( ev ) => {
   });
 });
 
+
+
 // convenience methods
 const stack = [];
 const undo = () => {
@@ -57,7 +80,7 @@ const undo = () => {
     return;
   }
 // UNDO LAST on stack
-  for( let exit of stack.pop() ) exit();
+  stack.pop().disembodyState();
 };
 
 // === Convenience method for itag syntax ===
@@ -65,8 +88,8 @@ const itag_method = function( ...mctx ){
   const ctx = Context( ...mctx );
   // console.log( "ctx", ctx );
   // $.syntax.itag( this )( ctx );
-  Eval( this, [ 0 ], ctx );
-  stack.push( ctx.layer.exits  );
+  Eval( this, [ 10, 10 ], ctx );
+  stack.push( ctx.layer  );
 }
 Function.prototype.itag = itag_method;
 Array.prototype.itag = itag_method;

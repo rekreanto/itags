@@ -1,7 +1,7 @@
 
 $2.block =  
 ( blockname )  =>
-( ...syntags ) => // syntactic itags
+( ...syntags ) => // syntactic tag expressions
 ( ctx )      => 
 {
 // STORE block name and syntags
@@ -14,10 +14,19 @@ for( let syntag of syntags )
   $.syntax.itag( syntag )( ctx );
 };
 
+$2.layer =  
+(  ) =>
+( ...syntexps ) => // syntactic tag expressions
+ctx  => 
+{
+// PROCESS descendants
+for( let syntexp of syntexps )
+  $.syntax.itag( syntexp )( ctx );
+};
 
 $2.tag = 
   ( tagname, ...rolenames )   =>
-  ( ...syntags ) => // syntactic itags
+  ( ...syntexps ) => // syntactic tag expressions
   ( ctx )      => 
 {
 // CREATE tag
@@ -28,8 +37,8 @@ $2.tag =
 // PROCESS roles
   $1.role( ...rolenames )( ctx_  );
 // PROCESS descendants
-  for( let syntag of syntags )
-    $.syntax.itag( syntag )( ctx_ );
+  for( let syntexp of syntexps )
+    $.syntax.itag( syntexp )( ctx_ );
 // STORE exit action
   ctx.layer.exits.push
     ( () => { node.parentNode.removeChild( node ) } 
@@ -58,7 +67,6 @@ $2.the =
   ( ...syntexps ) => // syntactic tag expressions
   ctx =>
 {
-  console.log( noun, ctx.layer )
 // LOOKUP
   const node = ctx.layer.lookup( noun );
 // PROJECT
@@ -77,7 +85,7 @@ $1.textnode =
   ctx.node.appendChild( node );
 // EXIT
   ctx.layer.exits.push
-    ( () => { node.parentNode.removeChild( node ) } 
+    ( () => { ctx.node.removeChild( node ) } 
     );
 };
 
@@ -92,6 +100,25 @@ $2.style =
 // EXIT
   ctx.layer.exits.push
     ( () => { ctx.node.style.removeProperty( k ); } 
+    )
+  ;
+};
+
+$2.attr =
+  ( k )    =>
+  ( v )    =>
+  ( ctx )  => 
+{
+// ENTRY
+  const had_v = ctx.node.hasAttribute( k );
+  const old_v = ctx.node[ k ];
+  ctx.node[ k ] = v;
+// EXIT
+  ctx.layer.exits.push
+    ( () => { 
+        if( !had_v ) ctx.node.removeAttribute( k );
+        else ctx.node[ k ] = old_v;
+      } 
     )
   ;
 };
@@ -112,13 +139,12 @@ $1.class =
 };
 
 $2.value = Match
-  ( /^<([^>]+?)>$/, signature => $.value_args( signature )
-  , /^one-of\s+/  , argsyntax => $.value_oneof( ...trimsplit( argsyntax ) )
-  , /^all-of\s+/  , argsyntax => $.value_allof( ...trimsplit( argsyntax ) )  
-  )
+  ( /^<([^>]+?)>/, signature => $.value_x( 'args', signature )
+  , /^(\S+)\s+/  , ( type, stx ) => $.value_x( type, ...trimsplit( stx ) )
+ )
 ;
-$.value_args =   
-  ( signature ) => // syntax
+$.value_x =   
+  ( type, ...signature ) => // syntax
   () =>
   ( ctx ) => 
 {
@@ -126,44 +152,75 @@ $.value_args =
   ctx.layer.embos = [];
   ctx.layer.trans = {};
 // EXTEND layer with methods
-  ctx.layer.getState = args_getState;
-  ctx.layer.embodyState = args_embodyState;
-// Log  
-  console.log("metatag value_args")
+  Object.assign( ctx.layer, $.mixin[ type ] );
 };
-$2.bind_event = ( eventname ) => ( trans ) => ( ctx ) =>
-{ console.log( 'BIND TAG anon read' )
+
+
+$2.bind_event = 
+  eventname =>
+  gact => 
+  ctx => {
   const ground = ctx.layer;
+  const handler = () => {
+    // console.log( `The event '${ eventname }' was emitted` );
+    // PERFORM ground action 
+    gact( ground );
+  };
   ctx.node.addEventListener
     ( eventname
-    , () => {
-        console.log( `The event '${ eventname }' was emitted` );
-        // PERFORM ground action 
-        trans( ground );
-      } 
-    )
-  ;
+    , handler
+    );
+  ctx.layer.exits.push
+    ( () => { ctx.node.removeEventListener( eventname, handler ) } 
+    );
+};
+
+$2.bind_state = 
+  eventname =>
+  xgact => // ground action
+  ctx => {
+  const ground = ctx.layer;
+  const handler = e => {
+    console.log( `The elem state '${ e }' was entered` );
+    const gact = xgact( e );
+    // PERFORM ground action 
+    gact( ground );
+    console.log( "GACT", e.target.value, gact )
+  };
+  ctx.node.addEventListener
+    ( eventname
+    , handler
+    );
+  ctx.layer.exits.push
+    ( () => { ctx.node.removeEventListener( eventname, handler ) } 
+    );
 };
 
 $2.trans = 
-  ( key ) =>
-  ( def ) =>
-  ( ctx ) =>
-{
-
-};
+  ( key ) => ( def ) => ( ctx ) => 
+  ctx.layer.trans[ key ] = def;
 
 $1.embo = ( embo ) => ( ctx ) => 
 { /* STORE embodiment */
-  ctx.layer.embos.push( { node: ctx.node, embo } );
+  ctx.layer.embos.push({ ctx, embo } );
 };
 
 $2.embo = ( key ) => ( texp ) => ( ctx ) => 
 { /* STORE embodiment */
-  ctx.layer.embos.push
-    ( { node: ctx.node
-      , embo: { key: texp }
-      } 
-  ); 
+  ctx.layer.embos.push({ ctx, embo: { key: texp } }); 
 };
 
+// time
+$2.after = 
+  ms   =>
+  gact =>
+  ctx  => 
+{
+  const ref = setTimeout
+    ( () => { gact( ctx.layer ) }
+    , ms 
+    );
+  ctx.layer.exits.push
+    ( () => { clearTimeout( ref ) }
+    );
+};

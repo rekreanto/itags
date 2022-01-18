@@ -1,12 +1,32 @@
+h3 {
+  border-top: solid 1px black; 
+}
+
+
 pre.demo-here {
   background-color: hsl( 40, 80%, 95% ) !important;
   border-top: solid 1px hsl( 40, 80%, 80% );
   border-bottom: solid 1px hsl( 40, 80%, 80% );
-
 }
-
 
 .demo-output-here {
-  border: solid 10px hsl( 40, 100%, 50% );
+  display: inline-block;
+  margin: 1rem;
+  min-width: 160px;
+  border: solid 1px hsl( 40, 100%, 0% );
+  border-radius: 0.2rem; 
 }
 
+.demo-output-here button {
+  margin: 0.3rem;
+  padding: 0.6rem;
+  background-color: white;
+  border-radius: 0.4rem;
+}
+
+
+.listing-here {
+  background-color: hsl( 25, 80%, 95% ) !important;
+  border-top: solid 1px hsl( 25, 80%, 80% );
+  border-bottom: solid 1px hsl( 40, 80%, 80% );
+}
