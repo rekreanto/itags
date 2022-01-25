@@ -80,6 +80,7 @@ $.mixin.args.embodyState = function( arr ){
   this.val = arr;
 // DISEMBODY 
   this.disembodyState();
+  if( arr.length === 0 ) return arr = this.trans['INIT']()( this );
 // MAKE new layer
   const layer = Layer( this )
 // EMBODY
@@ -121,7 +122,9 @@ $.mixin.oneof.disembodyState = function(){
 $.mixin.oneof.embodyState = function( arr ){
 // DISEMBODY 
   this.disembodyState();
-  console.log( 'state', ...arr )
+  console.log( 'state', ...arr );
+  // INIT
+  if( arr.length === 0 ) return this.trans['INIT']()(this);
   const [ x, ...xs ] = arr;
   this.val = x;
 // MAKE new layer
@@ -143,3 +146,53 @@ $.mixin.oneof.transition = function( trans ){
   const groundaction = trans( ...state );
   groundaction( this );
 };
+
+
+
+
+// allof
+
+$.mixin.allof.getState = function( arr=[] ){
+  const s = {};
+  arr.push( s );
+// RECUR UPWARDS
+  for( let [k,lay] of Object.entries( this.uppers )){
+    s[k] = lay.getState();
+  }
+// RETURN result for convenience
+  return arr;
+};
+
+// unchanged
+$.mixin.allof.disembodyState = function(){
+  h
+  if( this.upper ) {
+    this.upper.disembodyState();
+    console.log( "EXITING",...this.upper.exits)
+    for( let exit of this.upper.exits ) exit();    
+  };
+}
+
+$.mixin.allof.embodyState = function( [ obj ] ){
+// DISEMBODY 
+console.log("ALLOF-----", obj )
+// INIT
+// MAKE new layer
+// EMBODY
+  for( let { ctx, embo } of this.embos ){
+    const syntexp = embo[ this.val ];
+    if( syntexp !== undefined ){
+      const texp = $.syntax.itag( syntexp );
+      Eval( texp, xs, Context({ layer }, ctx ) );
+    }
+  };  
+};
+
+$.mixin.oneof.transition = function( trans ){
+  const state = this.getState();
+  // console.log( "state",state );
+  // this.disembodyState();
+  const groundaction = trans( ...state );
+  groundaction( this );
+};
+

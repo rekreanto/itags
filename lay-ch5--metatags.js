@@ -185,7 +185,6 @@ $2.bind_state =
     const gact = xgact( e );
     // PERFORM ground action 
     gact( ground );
-    console.log( "GACT", e.target.value, gact )
   };
   ctx.node.addEventListener
     ( eventname
@@ -207,7 +206,7 @@ $1.embo = ( embo ) => ( ctx ) =>
 
 $2.embo = ( key ) => ( texp ) => ( ctx ) => 
 { /* STORE embodiment */
-  ctx.layer.embos.push({ ctx, embo: { key: texp } }); 
+  ctx.layer.embos.push({ ctx,  embo: [ key, texp ] }); 
 };
 
 // time

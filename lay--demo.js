@@ -88,7 +88,7 @@ const itag_method = function( ...mctx ){
   const ctx = Context( ...mctx );
   // console.log( "ctx", ctx );
   // $.syntax.itag( this )( ctx );
-  Eval( this, [ 10, 10 ], ctx );
+  Eval( this, [ ], ctx );
   stack.push( ctx.layer  );
 }
 Function.prototype.itag = itag_method;

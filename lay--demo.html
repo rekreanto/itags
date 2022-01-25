@@ -130,8 +130,8 @@
   const num2bg = n => 
     [ '~background-color', num2color( n ) ];
 </script>
-<script class="demo-here active">
-  [ '<>UpCounter'
+<script class="listing-here">
+  const UpCounterA =   [ '<>UpCounter'
   // type
   , [ '::<int>' ]
   // body
@@ -140,7 +140,7 @@
   , [ '<button>', " 0", [ '!click', Trans( 'RESET' ) ] ]
   , [ '<button>', "+1", [ '!click', Trans( 'INCR' ) ] ]
   // transitions
-  , [ 'INIT' , () => State( 0 ) ]
+  , [ 'INIT' , () => State( 42 ) ]
   , [ 'DECR' , n  => State( n-1 ) ]
   , [ 'RESET', _  => State( 0 ) ]
   , [ 'INCR' , n  => State( n+1 ) ]
@@ -149,43 +149,57 @@
   , [ '/', n => [ 'the display', num2bg( n ) ] ] // visualize sign
   ]
 </script>
-<h3>UpCounter with inlined embodiments</h3>
 <script class="demo-here active">
-  [ '<>UpCounter'
-  // type
-  , [ '::<int>' ]
-  // body
-  , [ '<h1 display>'
-    , [ '/', n => n ] // display number
-    , [ '/', n => num2bg( n ) ] // visaualize sign
+  UpCounterA
+</script>
+
+</script>
+<h3>UpCounter with inlined embodiments</h3>
+<script class="listing-here">
+  const UpCounterB = 
+    [ '<>UpCounter'
+    // type
+    , [ '::<int>' ]
+    // body
+    , [ '<h1 display>'
+      , [ '/', n => n ] // display number
+      , [ '/', n => num2bg( n ) ] // visaualize sign
+      ]
+    , [ '<button>', "-1", [ '!click', Trans( 'DECR' ) ] ]
+    , [ '<button>', " 0", [ '!click', Trans( 'RESET' ) ] ]
+    , [ '<button>', "+1", [ '!click', Trans( 'INCR' ) ] ]
+    // transitions
+    , [ 'INIT' , () => State( 0 ) ]
+    , [ 'DECR' , n  => State( n-1 ) ]
+    , [ 'RESET', _  => State( 0 ) ]
+    , [ 'INCR' , n  => State( n+1 ) ]
     ]
-  , [ '<button>', "-1", [ '!click', Trans( 'DECR' ) ] ]
-  , [ '<button>', " 0", [ '!click', Trans( 'RESET' ) ] ]
-  , [ '<button>', "+1", [ '!click', Trans( 'INCR' ) ] ]
-  // transitions
-  , [ 'INIT' , () => State( 0 ) ]
-  , [ 'DECR' , n  => State( n-1 ) ]
-  , [ 'RESET', _  => State( 0 ) ]
-  , [ 'INCR' , n  => State( n+1 ) ]
-  ]
+  ;
+</script>
+<script class="demo-here active">
+  UpCounterB
 </script>
 
 <h3>UpCounter with inlined embodiments and inlined transitions</h3>
-<script class="demo-here active">
-  [ '<>UpCounter'
-  // type
-  , [ '::<int>' ]
-  // body
-  , [ '<h1 display>'
-    , [ '/', n => n ] // display number
-    , [ '/', n => num2bg( n ) ] // visaualize sign
+<script class="listing-here">
+  const UpCounterC = 
+    [ '<>UpCounter'
+    // type
+    , [ '::<int>' ]
+    // body
+    , [ '<h1 display>'
+      , [ '/', n => n ] // display number
+      , [ '/', n => num2bg( n ) ] // visaualize sign
+      ]
+    , [ '<button>', "-1", [ '!click', Trans( n  => State( n-1 ) ) ] ]
+    , [ '<button>', " 0", [ '!click', Trans( _  => State( 0 ) ) ] ]
+    , [ '<button>', "+1", [ '!click', Trans( n  => State( n+1 ) ) ] ]
+    // transitions
+    , [ 'INIT' , () => State( -42 ) ]
     ]
-  , [ '<button>', "-1", [ '!click', Trans( n  => State( n-1 ) ) ] ]
-  , [ '<button>', " 0", [ '!click', Trans( _  => State( 0 ) ) ] ]
-  , [ '<button>', "+1", [ '!click', Trans( n  => State( n+1 ) ) ] ]
-  // transitions
-  , [ 'INIT' , () => State( 0 ) ]
-  ]
+</script>
+<script class="demo-here active">
+  UpCounterC
 </script>
 
 
@@ -195,23 +209,32 @@
   const c2f = c => ( c *1.8 ) +32 ;
   const f2c = f => ( f -32  ) /1.8;
 </script>
+<script class="listing-here ">
+  const TempConvA =
+    [ '<>TempConvA'
+    , [ '::<str>' ]
+    , [ '<input c-inp>', [ '@type', 'text' ], [ '@size', '5' ] ]
+    , "<=>"
+    , [ '<input f-inp>', [ '@type', 'text' ], [ '@size', '5' ] ]
+    // bindings
+    , [ 'the c-inp', [ '=input', e => State( e.target.value ) ] ]
+    // embodiments
+    , [ '/', c => [ 'the f-inp', [ '@value', c2f( parseFloat( c ) ).toFixed( 2 ) ] ] ]
+    // transitions
+    , [ 'INIT' , () => State( '233' ) ]
+    ]
+  ;
+</script>
 <script class="demo-here active">
-  [ '<>TempConvA'
-  , [ '::<str>' ]
-  , [ '<input c-inp>', [ '@type', 'text' ], [ '@size', '5' ] ]
-  , "<=>"
-  , [ '<input f-inp>', [ '@type', 'text' ], [ '@size', '5' ] ]
-  // bindings
-  , [ 'the c-inp', [ '=input', e => State( e.target.value ) ] ]
-  // embodiments
-  , [ '/', c => [ 'the f-inp', [ '@value', c2f( parseFloat( c ) ).toFixed( 2 ) ] ] ] 
-  ]
+  TempConvA;
 </script>
 
 <h3>TemConvB</h3>
 <script class="listing-here">
   const redbg = [ '~background-color', 'red' ];
-  const C2F = 
+  </script>
+  <script class="listing-here">
+    const C2F = 
     [ '_'
     // layer type
     , [ '::<str temp-in-celcius>' ]
@@ -236,24 +259,30 @@
   ;
 </script>
 
-<script class="demo-here active">
-  [ '<>TempConvB'
-  // layer type
-  , [ '::oneof C2F F2C' ]
-  , [ '<h1 title>', "TempConv" ]
-  , [ '<div display>' ]
-  , [ '<input c-inp>', [ '@type', 'text' ], [ '@size', '10' ] ]
-  , [ '<span arrow>' ]
-  , [ '<input f-inp>', [ '@type', 'text' ], [ '@size', '10' ] ]
-  // bindings
-  , [ 'the c-inp', [ '!focus', State( 'C2F' ) ] ]
-  , [ 'the f-inp', [ '!focus', State( 'F2C' ) ] ]
-  // embodiments
-  , [ '/', { C2F, F2C } ] 
-  , [ 'the arrow', [ '/', { C2F: " =>", F2C: '<= ' } ] ]
-  ]
+<script class="listing-here">
+  const TempConvB =
+    [ '<>TempConvB'
+    // layer type
+    , [ '::oneof C2F F2C' ]
+    , [ '<h1 title>', "TempConv" ]
+    , [ '<div display>' ]
+    , [ '<input c-inp>', [ '@type', 'text' ], [ '@size', '10' ] ]
+    , [ '<span arrow>' ]
+    , [ '<input f-inp>', [ '@type', 'text' ], [ '@size', '10' ] ]
+    // bindings
+    , [ 'the c-inp', [ '!focus', State( 'C2F' ) ] ]
+    , [ 'the f-inp', [ '!focus', State( 'F2C' ) ] ]
+    // transitions
+    , [ 'INIT' , () => State( 'F2C', '451' ) ]
+    // embodiments
+    , [ '/', { C2F, F2C } ] 
+    , [ 'the arrow', [ '/', { C2F: " =>", F2C: '<= ' } ] ]
+    ]
+  ;
 </script>
-
+<script class="demo-here active">
+ TempConvB
+</script>
 
 
 <h2>Timers</h2>
@@ -263,6 +292,7 @@
     [ '<>EternalUpCounter'
     , [ '::<int>' ]
     // transitions
+    , [ 'INIT' , () => State( 42 ) ]
     , [ 'TICK', n => State( n+1 ) ]
     // body
     , [ '<h1 display>' ]
@@ -284,73 +314,118 @@
   , [ '<h1 display>' ]
   , [ '/', n => [ 'the display', n ] ]
   , [ '/', n => [ 'after 1s', Trans( '..', n => State( n+1 ) ) ] ]
+  // transitions
+  , [ 'INIT' , () => State( 420 ) ]
   ]
-  ;
+;
 </script>
 <script class="demo-here active">
   EternalUpCounterB
 </script>
 
 
-<h3>Dynamic Timer A</h3>
-<script class="demo-here active">
-  [ '<>DynamicTimerA'
-  , [ '::<int>' ]
-  // body
-  , [ '<h1 title>', "DownCounter" ]
-  , [ '<h1 display>' ]
-  , [ '<button reset-btn>', " 0", [ '!click', State( 0 ) ] ]
-  , [ '<button incr-btn>' , "+1", [ '!click', Trans( n => State( n+1 ) ) ] ]
-  // transitions
-  , [ 'TICK', n => State( n-0.1 ) ]
-  // embodiments
-  , [ '/', n => [ 'the display', Math.abs( n.toFixed( 2 ) ) ] ]
-  , [ '/', n => n > 0
-      ? [ 'after 100ms',  Trans( 'TICK' ) ]
-      : [ '~background-color', '#a00' ] 
+<h3>Dynamic Timer</h3>
+<script class="listing-here">
+  const blabla = n => {
+    const str = n.toString().padStart( 4, '0' );
+
+    return str.slice( 0, 1 ) + '.' + str.slice( 1, 3 );
+  };
+  const DynamicTimerA =   
+    [ '<>DynamicTimerA'
+    , [ '::<int>' ]
+    // body
+    , [ '<h1 title>', "DownCounter" ]
+    , [ '<h1 display>' ]
+    , [ '<button reset-btn>', " 0", [ '!click', State( 0 ) ] ]
+    , [ '<button incr-btn>' , "+1", [ '!click', Trans( n => State( n+1000 ) ) ] ]
+    // transitions
+    , [ 'INIT' , () => State( 4200 ) ]
+    , [ 'TICK', n => State( n-10 ) ]
+    // embodiments
+    , [ '/', n => [ 'the display', blabla( n ) ] ]
+    , [ '/', n => n > 0
+        ? [ 'after 100ms',  Trans( 'TICK' ) ]
+        : [ '~background-color', '#a00' ] 
+      ]
     ]
-  ]
+  ;
+
+</script>
+<script class="demo-here active">
+  DynamicTimerA;
 </script>
 
-<h3>Dynamic Timer with Range</h3>
+<h3>Dynamic Timer B -- with Range</h3>
 <p>rthis is essentially the timer from <a href="https://eugenkiss.github.io/7guis/tasks#timer">7 GUI's</a></p>
 <script class="listing-here">
-
+  const DynamicTimerB = 
+    [ '<>DynamicTimerB'
+    , [ '::<int>' ]
+    // STRUCTURE
+    , [ '<h1 timer>', "Dynamic Timer" ]
+    , "Elapsed: "
+    , [ '<input elapsed-rng>', [ '@type', 'range' ], [ '@disabled', 'true'] ]
+    , [ '<hr>' ]
+    , [ '<div display>' ]
+    , [ '<hr>' ]
+    , "Duration:"
+    , [ '<input duration-rng>', [ '@type', 'range' ], [ '@max', '30000' ] ]
+    , [ '<hr>' ], [ '<button reset-btn>' , "RESET" ]
+    // BINDINGS
+    , [ 'the duration-rng', [ '=input', ev => Trans( (e,d) => State( e, parseFloat(ev.target.value) ) ) ] ]
+    , [ 'the reset-btn', [ '!click', Trans( ( e, d)  => State( 0, d ) ) ] ]
+    // TRANSITIONS
+    , [ 'INIT', () => State( 11000, 21000 ) ]
+    , [ 'TICK', ( e, d ) => State( e + 100, d ) ]
+    // EMBODIMENTS
+    // show values
+    , [ '/', ( e, d ) => [ 'the display', (e/1000).toFixed(2), ", ", (d/1000).toFixed(2) ] ]
+    // update the elapsed range
+    , [ '/', ( e, d ) => [ 'the elapsed-rng', [ '@max', d ], [ '@value', e ] ] ]
+    // tick if relevant
+    , [ '/', ( e, d ) =>  
+        e < d ? [ 'after 100ms', Trans( 'TICK' ) ]
+              : [ '~background-color', '#a00' ]
+      ]
+    ]
+  ;
 </script>
 <script class="demo-here active">
-  [ '<>DynamicTimer'
-  , [ '::<int>' ]
-  // STRUCTURE
-  , [ '<h1 timer>', "Dynamic Timer" ]
-  , "Elapsed: "
-  , [ '<input elapsed-rng>', [ '@type', 'range' ], [ '@disabled', 'true'], [ '@step', '0.1' ] ]
-  , [ '<hr>' ]
-  , [ '<div display>' ]
-  , [ '<hr>' ]
-  , "Duration:"
-  , [ '<input duration-rng>', [ '@type', 'range' ], [ '@max', '30' ] ]
-  , [ '<hr>' ], [ '<button reset-btn>' , "RESET" ]
-  // BINDINGS
-  , [ 'the duration-rng', [ '=input', ev => Trans( (e,d) => State( e, parseFloat(ev.target.value) ) ) ] ]
-  , [ 'the reset-btn', [ '!click', Trans( ( e, d)  => State( 0, d ) ) ] ]
-  // TRANSITIONS
-  , [ 'TICK', ( e, d ) => State( e+0.1, d ) ]
-  // EMBODIMENTS
-  // show values
-  , [ '/', ( e, d ) => [ 'the display', e.toFixed(1), ", ", d.toFixed(1) ] ]
-  // update the elapsed range
-  , [ '/', ( e, d ) => [ 'the elapsed-rng', [ '@max', d ], [ '@value', e ] ] ]
-  // maybe run timeout
-  , [ '/', ( e, d ) =>  
-      e < d ? [ 'after 100ms', Trans( 'TICK' ) ]
-            : [ '~background-color', '#a00' ]
-    ]
-  ]
+  DynamicTimerB;
 </script>
 
+<h2>Composition</h2>
+<h3>AppGrid</h3>
+<p>AppGrid composes four apps and shows them in a scandinavian flag layout, or, if there isn't enough horizontal space, as a column.</p>
+<script class="listing-here">
+  const AppGrid = ( a, b, c, d ) =>
+  [ '<>AppFLag'
+  // type
+  , [ '::allof a b c d']
+  // structure
+  , [ '<h1 title>', "AppGrid" ]
+  , [ '<div body>'
+    , [ '<div a>', [ '/a', a ] ]
+    , [ '<div b>', [ '/b', b ] ]
+    , [ '<div c>', [ '/c', c ] ]
+    , [ '<div d>', [ '/d', d ] ]      
+    ]
+  // transitions
+  ]
+  ;
+</script>
+<script class="demo-here active">
+  AppGrid
+    ( DynamicTimerA
+    , DynamicTimerA
+    , DynamicTimerA
+    , DynamicTimerA
+    )
+  ;
+</script>    
 
-
-    <div id="demo-x"></div>
+<div id="demo-x"></div>
 
 
     <!-- NOTIFY if not evergreen browser -->
