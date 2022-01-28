@@ -187,3 +187,5 @@ str = str.trim();
 // RETURN the actual splitting
 return str.split( re );
 };
+
+const otherwise = ( ...xs ) => ( succ, fail ) => succ( ...xs );

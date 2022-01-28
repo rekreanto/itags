@@ -24,12 +24,21 @@ const State = Match
   ( '..', ( _, ...xs ) => ground => State( ...xs )( ground.lower )
         , ( ...vals ) => ground => ground.embodyState( vals )
   );
-// the lookup method
+
+
+
+const Log = ( ...args ) => ground => {
+  console.log( "State:", ground.getState() );
+  console.log( ...args );
+}
+
+  // the lookup method
 function lookup( key ){
   if( Object.hasOwn( this.env, key ) ) return this.env[ key ]; // SUCCESS
   if( !this.lower ) throw `No entry for the key ${ key }'}`; // DETECT FAILURE
   return this.lower.lookup( key ); // RECUR DOWNWARDS
 }
+
 
 
 // Layer constructor
@@ -80,7 +89,7 @@ $.mixin.args.embodyState = function( arr ){
   this.val = arr;
 // DISEMBODY 
   this.disembodyState();
-  if( arr.length === 0 ) return arr = this.trans['INIT']()( this );
+  if( arr.length === 0 ) return arr = this.trans['INIT']( this );
 // MAKE new layer
   const layer = Layer( this )
 // EMBODY
@@ -114,7 +123,6 @@ $.mixin.oneof.getState = function( arr=[] ){
 $.mixin.oneof.disembodyState = function(){
   if( this.upper ) {
     this.upper.disembodyState();
-    console.log( "EXITING",...this.upper.exits)
     for( let exit of this.upper.exits ) exit();    
   };
 }
@@ -122,9 +130,8 @@ $.mixin.oneof.disembodyState = function(){
 $.mixin.oneof.embodyState = function( arr ){
 // DISEMBODY 
   this.disembodyState();
-  console.log( 'state', ...arr );
   // INIT
-  if( arr.length === 0 ) return this.trans['INIT']()(this);
+  if( arr.length === 0 ) return this.trans['INIT'](this);
   const [ x, ...xs ] = arr;
   this.val = x;
 // MAKE new layer
@@ -148,8 +155,6 @@ $.mixin.oneof.transition = function( trans ){
 };
 
 
-
-
 // allof
 
 $.mixin.allof.getState = function( arr=[] ){
@@ -165,25 +170,33 @@ $.mixin.allof.getState = function( arr=[] ){
 
 // unchanged
 $.mixin.allof.disembodyState = function(){
-  h
-  if( this.upper ) {
-    this.upper.disembodyState();
-    console.log( "EXITING",...this.upper.exits)
-    for( let exit of this.upper.exits ) exit();    
+  if( this.uppers ) {
+    for( let [k,lay] of Object.entries( this.uppers ))
+      lay.disembodyState();
   };
 }
 
 $.mixin.allof.embodyState = function( [ obj ] ){
-// DISEMBODY 
-console.log("ALLOF-----", obj )
 // INIT
-// MAKE new layer
-// EMBODY
-  for( let { ctx, embo } of this.embos ){
-    const syntexp = embo[ this.val ];
+  this.keys = this.signature;
+  if( !obj ) obj = Object.fromEntries
+    ( this.keys.map( k => [ k, [] ] )
+    );
+// DISEMBODY 
+  this.disembodyState();
+// MAKE new layers
+  this.uppers = {};
+  for( let k of this.keys )
+    this.uppers[ k ] = Layer( this );
+// READ embodiments
+  for( let { ctx, embo:[k,syntexp] } of this.embos ){
     if( syntexp !== undefined ){
       const texp = $.syntax.itag( syntexp );
-      Eval( texp, xs, Context({ layer }, ctx ) );
+      Eval
+        ( texp
+        , obj[ k ]
+        , Context({ layer: this.uppers[ k ] }, ctx ) 
+        );
     }
   };  
 };

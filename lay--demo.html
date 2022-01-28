@@ -119,35 +119,61 @@
     <h2>UpCounter</h2>
 
 
+
+<h3>UpCounter</h3>
+<script class="listing-here">
+ const UpCounter =   
+    [ '<>UpCounter'
+    // type
+    , [ ':<int>', State( 0 ) ]
+    // body
+    , [ '<div title>', "UpCounter" ]
+    , [ '<span display>' ]
+    , [ '<button>', "+1", [ '!click', Trans( 'INCR' ) ] ]
+    // transitions
+    , [ 'INCR' , n  => State( n+1 ) ]
+    // embodiments
+    , [ '/', n => [ 'the display', n ] ] // display number
+    ]
+  ;
+</script>
+<script class="demo-here active">
+  UpCounter
+</script>
+
+
 <h3>UpCounter with named transitions</h3>
 <script class="listing-here">
   const num2color = n => 
-    [ 'darkred'        // negative
-    , 'black'          // zero
-    , 'darkgreen'      // positive
+    [ 'pink'        // negative
+    , 'lightgray'          // zero
+    , 'lightgreen'      // positive
     ][ Math.sign( n )+1 ]
   ;
   const num2bg = n => 
     [ '~background-color', num2color( n ) ];
 </script>
+
+
 <script class="listing-here">
-  const UpCounterA =   [ '<>UpCounter'
-  // type
-  , [ '::<int>' ]
-  // body
-  , [ '<h1 display>' ]
-  , [ '<button>', "-1", [ '!click', Trans( 'DECR' ) ] ]
-  , [ '<button>', " 0", [ '!click', Trans( 'RESET' ) ] ]
-  , [ '<button>', "+1", [ '!click', Trans( 'INCR' ) ] ]
-  // transitions
-  , [ 'INIT' , () => State( 42 ) ]
-  , [ 'DECR' , n  => State( n-1 ) ]
-  , [ 'RESET', _  => State( 0 ) ]
-  , [ 'INCR' , n  => State( n+1 ) ]
-  // embodiments
-  , [ '/', n => [ 'the display', n ] ] // display number
-  , [ '/', n => [ 'the display', num2bg( n ) ] ] // visualize sign
-  ]
+  const UpCounterA =   
+    [ '<>UpCounter'
+    // type
+    , [ ':<int>', State( 42 ) ]
+    // body
+    , [ '<span display>' ]
+    , [ '<button>', "-1", [ '!click', Trans( 'DECR' ) ] ]
+    , [ '<button reset-btn>', " 0" ]
+    , [ '<button>', "+1", [ '!click', Trans( 'INCR' ) ] ]
+    // transitions
+    , [ 'DECR' , n  => State( n-1 ) ]
+    , [ 'RESET', _  => State( 0 ) ]
+    , [ 'INCR' , n  => State( n+1 ) ]
+    // embodiments
+    , [ '/', n => [ 'the reset-btn', n===0? '' : [ '!click', Trans( 'RESET' ) ]  ] ]
+    , [ '/', n => [ 'the display', n ] ] // display number
+    , [ '/', n => [ 'the display', num2bg( n ) ] ] // visualize sign
+    ]
 </script>
 <script class="demo-here active">
   UpCounterA
@@ -159,9 +185,9 @@
   const UpCounterB = 
     [ '<>UpCounter'
     // type
-    , [ '::<int>' ]
+    , [ ':<int>', State( 0 ) ]
     // body
-    , [ '<h1 display>'
+    , [ '<span display>'
       , [ '/', n => n ] // display number
       , [ '/', n => num2bg( n ) ] // visaualize sign
       ]
@@ -169,7 +195,6 @@
     , [ '<button>', " 0", [ '!click', Trans( 'RESET' ) ] ]
     , [ '<button>', "+1", [ '!click', Trans( 'INCR' ) ] ]
     // transitions
-    , [ 'INIT' , () => State( 0 ) ]
     , [ 'DECR' , n  => State( n-1 ) ]
     , [ 'RESET', _  => State( 0 ) ]
     , [ 'INCR' , n  => State( n+1 ) ]
@@ -185,17 +210,15 @@
   const UpCounterC = 
     [ '<>UpCounter'
     // type
-    , [ '::<int>' ]
+    , [ ':<int>', State( -42 ) ]
     // body
-    , [ '<h1 display>'
+    , [ '<span display>'
       , [ '/', n => n ] // display number
       , [ '/', n => num2bg( n ) ] // visaualize sign
       ]
     , [ '<button>', "-1", [ '!click', Trans( n  => State( n-1 ) ) ] ]
     , [ '<button>', " 0", [ '!click', Trans( _  => State( 0 ) ) ] ]
     , [ '<button>', "+1", [ '!click', Trans( n  => State( n+1 ) ) ] ]
-    // transitions
-    , [ 'INIT' , () => State( -42 ) ]
     ]
 </script>
 <script class="demo-here active">
@@ -212,7 +235,7 @@
 <script class="listing-here ">
   const TempConvA =
     [ '<>TempConvA'
-    , [ '::<str>' ]
+    , [ ':<str>', State( '0' ) ]
     , [ '<input c-inp>', [ '@type', 'text' ], [ '@size', '5' ] ]
     , "<=>"
     , [ '<input f-inp>', [ '@type', 'text' ], [ '@size', '5' ] ]
@@ -220,8 +243,6 @@
     , [ 'the c-inp', [ '=input', e => State( e.target.value ) ] ]
     // embodiments
     , [ '/', c => [ 'the f-inp', [ '@value', c2f( parseFloat( c ) ).toFixed( 2 ) ] ] ]
-    // transitions
-    , [ 'INIT' , () => State( '233' ) ]
     ]
   ;
 </script>
@@ -237,9 +258,11 @@
     const C2F = 
     [ '_'
     // layer type
-    , [ '::<str temp-in-celcius>' ]
+    , [ ':<str>', State( '0' ) ]
     // bindings
-    , [ 'the c-inp', [ '=input', e => State( e.target.value ) ] ]
+    , [ 'the c-inp'
+    , [ 'node', elm => elm.select() ]
+    , [ '=input', e => State( e.target.value ) ] ]
     // embodiments
     , [ '/', c => [ 'the f-inp', [ '@value', c2f( parseFloat( c ) ).toFixed( 2 ) ] ] ]
     ]
@@ -250,7 +273,7 @@
    const F2C = 
     [ '_'
     // layer type
-    , [ '::<str temp-in-fahrenheit>' ]
+    , [ ':<str>', State( '32' ) ]
     // binding
     , [ 'the f-inp', [ '=input', e => State( e.target.value ) ] ]
     // embodiment
@@ -263,17 +286,14 @@
   const TempConvB =
     [ '<>TempConvB'
     // layer type
-    , [ '::oneof C2F F2C' ]
-    , [ '<h1 title>', "TempConv" ]
-    , [ '<div display>' ]
+    , [ ':oneof C2F F2C', State( 'F2C', '452' ) ]
+    , [ '<div title>', "TempConv" ]
     , [ '<input c-inp>', [ '@type', 'text' ], [ '@size', '10' ] ]
     , [ '<span arrow>' ]
     , [ '<input f-inp>', [ '@type', 'text' ], [ '@size', '10' ] ]
     // bindings
     , [ 'the c-inp', [ '!focus', State( 'C2F' ) ] ]
     , [ 'the f-inp', [ '!focus', State( 'F2C' ) ] ]
-    // transitions
-    , [ 'INIT' , () => State( 'F2C', '451' ) ]
     // embodiments
     , [ '/', { C2F, F2C } ] 
     , [ 'the arrow', [ '/', { C2F: " =>", F2C: '<= ' } ] ]
@@ -286,67 +306,66 @@
 
 
 <h2>Timers</h2>
-<h3>EternalUpCounter with named transition</h3>
+<h3>AutomaticUpCounter with named transition</h3>
 <script class="listing-here">
-  const EternalUpCounterA =
-    [ '<>EternalUpCounter'
-    , [ '::<int>' ]
-    // transitions
-    , [ 'INIT' , () => State( 42 ) ]
-    , [ 'TICK', n => State( n+1 ) ]
+  const AutomaticUpCounterA =
+    [ '<>AutomaticUpCounter'
+    , [ ':<int>', State( 42 ) ]
     // body
-    , [ '<h1 display>' ]
+    , [ '<div title>', "AutoUpCounter" ]
+    , [ '<div display>' ]
     , [ '/', n => [ 'the display', n ] ]
     , [ '/', n => [ 'after 1s', Trans( 'TICK' ) ] ]
+    // transitions
+    , [ 'TICK', n => State( n+1 ) ]
     ]
   ;
 </script>
 <script class="demo-here active">
- EternalUpCounterA
+ AutomaticUpCounterA
 </script>
 
-<h3>EternalUpCounter with local transition, utilizing transition-prefix down navigation</h3>
+<h3>AutomaticUpCounter with local transition, utilizing transition-prefix down navigation</h3>
 <script class="listing-here">
-  const EternalUpCounterB =
-  [ '<>EternalUpCounter'
-  , [ '::<int>' ]
+  const AutomaticUpCounterB =
+  [ '<>AutomaticUpCounter'
+  , [ ':<int>', State( 420 ) ]
   // body
-  , [ '<h1 display>' ]
+  , [ '<div title>', "AutoUpCounter" ]
+  , [ '<div display>' ]
   , [ '/', n => [ 'the display', n ] ]
   , [ '/', n => [ 'after 1s', Trans( '..', n => State( n+1 ) ) ] ]
-  // transitions
-  , [ 'INIT' , () => State( 420 ) ]
   ]
 ;
 </script>
 <script class="demo-here active">
-  EternalUpCounterB
+  AutomaticUpCounterB
 </script>
 
 
 <h3>Dynamic Timer</h3>
 <script class="listing-here">
   const blabla = n => {
-    const str = n.toString().padStart( 4, '0' );
 
-    return str.slice( 0, 1 ) + '.' + str.slice( 1, 3 );
+    const str =(n/100).toString().padStart( 2, '0' );
+
+    return str.slice( 0, str.length-1 ) + '.' + str.slice( str.length-1 );
   };
   const DynamicTimerA =   
     [ '<>DynamicTimerA'
-    , [ '::<int>' ]
+    , [ ':<int>', State( 4200 ) ]
     // body
-    , [ '<h1 title>', "DownCounter" ]
-    , [ '<h1 display>' ]
+    , [ '<div title>', "DownCounter" ]
+    , [ '<span display>' ]
     , [ '<button reset-btn>', " 0", [ '!click', State( 0 ) ] ]
     , [ '<button incr-btn>' , "+1", [ '!click', Trans( n => State( n+1000 ) ) ] ]
     // transitions
-    , [ 'INIT' , () => State( 4200 ) ]
-    , [ 'TICK', n => State( n-10 ) ]
+    , [ 'TICK', n => State( n-100 ) ]
     // embodiments
     , [ '/', n => [ 'the display', blabla( n ) ] ]
     , [ '/', n => n > 0
         ? [ 'after 100ms',  Trans( 'TICK' ) ]
-        : [ '~background-color', '#a00' ] 
+        : [ '~background-color', '#d88' ] 
       ]
     ]
   ;
@@ -359,24 +378,26 @@
 <h3>Dynamic Timer B -- with Range</h3>
 <p>rthis is essentially the timer from <a href="https://eugenkiss.github.io/7guis/tasks#timer">7 GUI's</a></p>
 <script class="listing-here">
-  const DynamicTimerB = 
-    [ '<>DynamicTimerB'
-    , [ '::<int>' ]
+  const DurationTimer = 
+    [ '<>DurationTimer'
+    , [ ':<int>', State( 11000, 21000 ) ]
     // STRUCTURE
-    , [ '<h1 timer>', "Dynamic Timer" ]
-    , "Elapsed: "
-    , [ '<input elapsed-rng>', [ '@type', 'range' ], [ '@disabled', 'true'] ]
+    , [ '<div title>', "Dynamic Timer" ]
+    , "Duration:"
+    , [ '<input duration-rng>', [ '@type', 'range' ], [ '@max', '30000' ] ]
     , [ '<hr>' ]
     , [ '<div display>' ]
     , [ '<hr>' ]
-    , "Duration:"
-    , [ '<input duration-rng>', [ '@type', 'range' ], [ '@max', '30000' ] ]
-    , [ '<hr>' ], [ '<button reset-btn>' , "RESET" ]
-    // BINDINGS
-    , [ 'the duration-rng', [ '=input', ev => Trans( (e,d) => State( e, parseFloat(ev.target.value) ) ) ] ]
+    , "Elapsed: "
+    , [ '<input elapsed-rng>', [ '@type', 'range' ], [ '@disabled', 'true'] ]
+    , [ '<hr>' ]
+    , [ '<button reset-btn>' , "RESET" ]
+
+
+      // BINDINGS
+      , [ 'the duration-rng', [ '=input', ev => Trans( (e,d) => State( e, parseFloat(ev.target.value) ) ) ] ]    
     , [ 'the reset-btn', [ '!click', Trans( ( e, d)  => State( 0, d ) ) ] ]
     // TRANSITIONS
-    , [ 'INIT', () => State( 11000, 21000 ) ]
     , [ 'TICK', ( e, d ) => State( e + 100, d ) ]
     // EMBODIMENTS
     // show values
@@ -386,13 +407,13 @@
     // tick if relevant
     , [ '/', ( e, d ) =>  
         e < d ? [ 'after 100ms', Trans( 'TICK' ) ]
-              : [ '~background-color', '#a00' ]
+              : [ '~background-color', '#d88' ]
       ]
     ]
   ;
 </script>
 <script class="demo-here active">
-  DynamicTimerB;
+  DurationTimer;
 </script>
 
 <h2>Composition</h2>
@@ -400,16 +421,16 @@
 <p>AppGrid composes four apps and shows them in a scandinavian flag layout, or, if there isn't enough horizontal space, as a column.</p>
 <script class="listing-here">
   const AppGrid = ( a, b, c, d ) =>
-  [ '<>AppFLag'
+  [ '<>AppGrid'
   // type
-  , [ '::allof a b c d']
+  , [ ':allof a b c d']
   // structure
-  , [ '<h1 title>', "AppGrid" ]
+  , [ '<div title>', "AppGrid" ]
   , [ '<div body>'
-    , [ '<div a>', [ '/a', a ] ]
-    , [ '<div b>', [ '/b', b ] ]
-    , [ '<div c>', [ '/c', c ] ]
-    , [ '<div d>', [ '/d', d ] ]      
+    , [ '<div part>', [ '/a', a ] ]
+    , [ '<div part>', [ '/b', b ] ]
+    , [ '<div part>', [ '/c', c ] ]
+    , [ '<div part>', [ '/d', d ] ]      
     ]
   // transitions
   ]
@@ -417,13 +438,94 @@
 </script>
 <script class="demo-here active">
   AppGrid
-    ( DynamicTimerA
+    ( UpCounter
+    , AutomaticUpCounterB
     , DynamicTimerA
-    , DynamicTimerA
-    , DynamicTimerA
+    , DurationTimer
     )
   ;
 </script>    
+
+<section>
+<h2>FlightBookers</h2>
+
+
+<h3>FlightBooker</h3>
+
+<p>The original flight booker from 7 guis.</p>
+
+<script class="listing-here">
+  const OneWay =
+    [ '_'
+    , [ ':<date>', State( '2022-01-01' ) ]
+    , [ 'the display', "OneWay"  ]
+    , [ 'the a-inp'
+      , [ '=input', evt => State( evt.target.value ) ]
+      , [ '/', Match
+          ( /^(\d\d\d\d)-(\d\d)-(\d\d)$/, (y,m,d) => 
+            [ 'the submit-btn', [ '!click', Log( "SUBMITTED", y,m,d ) ] ]
+          , otherwise, (str) => [ 'class','invalid' ] 
+          ) 
+        ]
+      ]
+    , 
+    ]
+  ;
+  const TwoWay =
+    [ '_'
+    , [ ':allof a b' ]
+    , [ 'the display', "TwoWay"  ]
+    , [ 'the a-inp', [ '=input', evt => State( 'a', evt.target.value ) ] ]
+    , [ 'the b-inp', [ '=input', evt => State( 'b', evt.target.value ) ] ]
+    , [ 'the submit-btn', [ '!click', Trans( "SUBMIT" ) ] ]
+      ]
+  ;
+
+  const FlightBooker = 
+    [ '<>FlightBooker'
+    , [ ':oneof OneWay TwoWay', State( 'OneWay' ) ]
+    // body
+    , [ '<div title>', "FlightBooker" ]
+    , [ '<div display>' ]
+    , [ '<hr>' ]
+    , [ '<select type-sel>'
+      , [ '<option>', "One way flight", [ '@value', 'OneWay' ] ]
+      , [ '<option>', "Two way flight", [ '@value', 'TwoWay' ] ]
+      ]
+    , [ '<hr>' ]
+    , [ '<span>', 'A: ' ]
+    , [ '<input a-inp>', [ '@type', 'text' ], [ '@value', '2022-01-01' ]  ]
+    , [ '<br>' ]
+    , [ '<span>', 'B: ' ]
+    , [ '<input b-inp>', [ '@type', 'text' ], [ '@value', '2022-02-01' ] ]
+    , [ '<hr>' ]
+    , [ '<button submit-btn>', "SUBMIT" ]
+    // bindings
+    , [ 'the type-sel', [ '=input', evt => State( evt.target.value ) ] ]
+    // transitions
+    , [ 'SUBMIT', () => Log( 'SUBMIT!' ) ]
+    // embodiments
+    , [ '/', { OneWay, TwoWay } ]
+    ]
+</script>
+<script class="demo-here active">
+  FlightBooker
+</script>
+
+<h3></h3>
+
+<p></p>
+
+<script class="listing-here">
+
+</script>
+<script class="demo-here">
+
+</script>
+
+</section>
+
+
 
 <div id="demo-x"></div>
 
@@ -442,3 +544,35 @@
   </body>
   </html>
   
+<!--
+
+
+<section>
+<h2></h2>
+
+
+<h3></h3>
+
+<p></p>
+
+<script class="listing-here">
+
+</script>
+<script class="demo-here">
+
+</script>
+
+<h3></h3>
+
+<p></p>
+
+<script class="listing-here">
+
+</script>
+<script class="demo-here">
+
+</script>
+
+</section>
+
+-->

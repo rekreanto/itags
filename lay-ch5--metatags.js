@@ -54,11 +54,15 @@ $1.role =
     ctx.layer.env[ rolename ] = ctx.node;
     
   }
+// REFLECT plain rolenames
+
 // REFLECT BEM rolenames
   for( let rolename of rolenames ){
     const blockname = ctx.layer.lookup( '__block__' );
     const bemclass = `${ blockname }__${ rolename }`;
     $1.class( bemclass )( ctx );
+    $1.class( rolename )( ctx );
+
   }
 };
 
@@ -139,18 +143,22 @@ $1.class =
 };
 
 $2.value = Match
-  ( /^<([^>]+?)>/, signature => $.value_x( 'args', signature )
-  , /^(\S+)\s+/  , ( type, stx ) => $.value_x( type, ...trimsplit( stx ) )
+  ( /^<([^>]+?)>/, signature => $2.value_x( 'args', signature )
+  , /^(\S+)\s+/  , ( type, argstx ) => $2.value_x( type, ...trimsplit( argstx ) )
  )
 ;
-$.value_x =   
+$2.value_x =   
   ( type, ...signature ) => // syntax
-  () =>
+  ( state ) =>
   ( ctx ) => 
 {
+
 // EXTEND layer with data structures  
   ctx.layer.embos = [];
   ctx.layer.trans = {};
+  ctx.layer.signature = signature;
+  if( state ) 
+    $2.trans( 'INIT' )( state )( ctx );
 // EXTEND layer with methods
   Object.assign( ctx.layer, $.mixin[ type ] );
 };
@@ -161,8 +169,8 @@ $2.bind_event =
   gact => 
   ctx => {
   const ground = ctx.layer;
+// DEFINE handler
   const handler = () => {
-    // console.log( `The event '${ eventname }' was emitted` );
     // PERFORM ground action 
     gact( ground );
   };
@@ -170,9 +178,12 @@ $2.bind_event =
     ( eventname
     , handler
     );
+  // PUSH disembodimet
   ctx.layer.exits.push
     ( () => { ctx.node.removeEventListener( eventname, handler ) } 
     );
+// REFLECT ACTIVATION
+  $1.class( '__bound__' )( ctx );
 };
 
 $2.bind_state = 
@@ -180,19 +191,23 @@ $2.bind_state =
   xgact => // ground action
   ctx => {
   const ground = ctx.layer;
+// DEFINE handler
   const handler = e => {
-    console.log( `The elem state '${ e }' was entered` );
     const gact = xgact( e );
     // PERFORM ground action 
     gact( ground );
   };
+// BIND handler
   ctx.node.addEventListener
     ( eventname
     , handler
     );
+// PUSH disembodimet
   ctx.layer.exits.push
     ( () => { ctx.node.removeEventListener( eventname, handler ) } 
     );
+// REFLECT ACTIVATION
+  $1.class( '__bound__' )( ctx );
 };
 
 $2.trans = 
@@ -223,3 +238,6 @@ $2.after =
     ( () => { clearTimeout( ref ) }
     );
 };
+
+
+$1.node = () => f => ctx => f( ctx.node )
