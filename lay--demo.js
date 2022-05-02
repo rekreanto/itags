@@ -92,6 +92,6 @@ const itag_method = function( ...mctx ){
   stack.push( ctx.layer  );
 }
 Function.prototype.itag = itag_method;
-Array.prototype.itag = itag_method;
+Array.prototype.itag  = itag_method;
 String.prototype.itag = itag_method;
 Number.prototype.itag = itag_method;

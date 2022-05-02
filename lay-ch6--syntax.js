@@ -14,7 +14,7 @@ $.syntax.head = Match
   , /^<>(\S+)$/      , blockname => $2.block( blockname )  
   , /^~(\S+)$/       , propname  => $2.style( propname )  
   , /^@(\S+)$/       , propname  => $2.attr( propname )  
-  , /^:/            , valuesyntax => $2.value( valuesyntax )
+  , /^:/             , valuesyntax => $2.value( valuesyntax )
   , /^!/             , eventsyntax => $2.bind_event( eventsyntax )  
   , /^=/             , eventsyntax => $2.bind_state( eventsyntax )  
   , /^_/             , layersyntax => $2.layer( layersyntax ) 

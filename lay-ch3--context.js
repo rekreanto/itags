@@ -4,11 +4,11 @@ const Context0 = () => Context1( document.body )
 // Context( <node> )
 const Context1 = Match
   ( _Node, node => { return { node, layer: Layer( ) } }
-  , _ObjLit, obj => obj
+  , _ObjLit, ctx => ctx
   , _String, query => {
-    const node = Context1( document.querySelector( query ) );
-    return Context1( node );
-  }
+      const node = Context1( document.querySelector( query ) );
+      return Context1( node );
+    } 
   )
 ;
 
