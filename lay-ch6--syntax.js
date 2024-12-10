@@ -1,15 +1,15 @@
 // Metatag Syntax
 $.syntax.head = Match
   ( _Function        , fn => fn
-    , /^after\s+([0-9.]+)s$/ , str => $2.after( parseFloat( str )*1000 )
-    , /^after\s+([0-9.]+)ms$/ , str => $2.after( parseFloat( str ) )
-    // GENERAL metatag valence-2 syntax
+  , /^after\s+([0-9.]+)s$/ , str => $2.after( parseFloat( str )*1000 )
+  , /^after\s+([0-9.]+)ms$/ , str => $2.after( parseFloat( str ) )
+// GENERAL metatag valence-2 syntax
   , /^([a-z]\S*)$/    , ( metatagname )  => $1[ metatagname ]    
 // GENERAL metatag valence-2 syntax
   , /^([a-z]\S*)\s+/    , ( metatagname, argstr )  => $2[ metatagname ]( ...trimsplit( argstr ) )
 // SPECIAL metatag syntaxes
 
-, /^<([^>]+?)>$/   , argstr    => $2.tag( ...trimsplit( argstr ) )
+  , /^<([^>]+?)>$/   , argstr    => $2.tag( ...trimsplit( argstr ) )
   , /^<([^>]+?)>$/   , tagname   => $2.tag( tagname )
   , /^<>(\S+)$/      , blockname => $2.block( blockname )  
   , /^~(\S+)$/       , propname  => $2.style( propname )  
